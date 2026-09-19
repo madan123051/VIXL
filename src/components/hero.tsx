@@ -3,8 +3,8 @@ import { CinematicMedia } from "@/components/cinematic-media";
 import { useCatalog } from "@/lib/use-catalog";
 
 const rise = {
-  hidden: { opacity: 0, y: 14, filter: "blur(4px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
 };
 
 export function Hero() {
@@ -53,7 +53,7 @@ export function Hero() {
         <motion.h1
           variants={rise}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display max-w-4xl text-4xl leading-[1.05] font-semibold tracking-[-0.04em] text-fg sm:text-5xl md:text-7xl"
+          className="font-display max-w-4xl text-4xl leading-[1.18] font-semibold tracking-[-0.03em] text-fg sm:text-5xl md:text-7xl"
         >
           {line1}
           {line2 ? (

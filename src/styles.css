@@ -18,6 +18,15 @@
   --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
+  /* Syne/Inter Tight clip g, y, p at Tailwind's default lh:1 on large type. */
+  --text-xl--line-height: 1.3;
+  --text-2xl--line-height: 1.28;
+  --text-3xl--line-height: 1.22;
+  --text-4xl--line-height: 1.18;
+  --text-5xl--line-height: 1.15;
+  --text-6xl--line-height: 1.12;
+  --text-7xl--line-height: 1.12;
+
   --radius-xs: 0.25rem;
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
@@ -59,6 +68,8 @@
   h2,
   h3 {
     text-wrap: balance;
+    overflow: visible;
+    padding-bottom: 0.06em;
   }
 
   p {

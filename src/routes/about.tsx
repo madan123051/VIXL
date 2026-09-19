@@ -17,8 +17,8 @@ export const Route = createFileRoute("/about")({
 });
 
 const rise = {
-  hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
-  visible: { opacity: 1, y: 0, filter: "blur(0px)" },
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
 };
 
 function About() {
@@ -50,7 +50,7 @@ function About() {
         </motion.p>
         <motion.h1
           variants={rise}
-          className="font-display mt-4 text-4xl leading-tight font-semibold tracking-[-0.04em] md:text-6xl"
+          className="font-display mt-4 text-4xl leading-[1.18] font-semibold tracking-[-0.03em] md:text-6xl"
         >
           {line1}
           {line2 ? (
