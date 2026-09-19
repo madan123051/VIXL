@@ -5,6 +5,7 @@ import {
   Scripts,
   useRouterState,
 } from "@tanstack/react-router";
+import { useLayoutEffect } from "react";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { FirebaseBoot } from "@/components/firebase-boot";
@@ -54,6 +55,14 @@ export const Route = createRootRoute({
 function RootDocument() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const desk = pathname.startsWith("/admin");
+
+  useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash) return;
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [pathname]);
 
   return (
     <html lang="en" className="dark antialiased" suppressHydrationWarning>
