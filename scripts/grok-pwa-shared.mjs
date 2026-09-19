@@ -152,17 +152,39 @@ export function stripInstallParams(url) {
 }
 
 export function renderInstallPageHtml(template, { host, url } = {}) {
+  const { name } = pwaBrand(host);
   return String(template)
-    .replaceAll("{{APP_NAME}}", escapeHtml(appNameFromHost(host)))
+    .replaceAll("{{APP_NAME}}", escapeHtml(name))
     .replaceAll("{{APP_URL}}", escapeHtml(stripInstallParams(url)));
 }
 
-export function renderWebManifest(hostHeader) {
-  const name = appNameFromHost(hostHeader);
+/** Home-screen name. Never "Grok App" for this published lab. */
+export function pwaBrand(hostHeader, site = {}) {
+  const fromSite = String(site.title ?? "").trim();
+  if (fromSite) {
+    return { name: fromSite, short_name: fromSite === "Visual Excellence Lab" ? "VIXL" : fromSite };
+  }
+  try {
+    const baked = String(snapshotOgIdentity().site?.title ?? "").trim();
+    if (baked) {
+      return { name: baked, short_name: baked === "Visual Excellence Lab" ? "VIXL" : baked };
+    }
+  } catch {
+    /* fs unavailable in some runtimes */
+  }
+  const fromHost = appNameFromHost(hostHeader);
+  if (fromHost && fromHost !== DEFAULT_APP_NAME) {
+    return { name: fromHost, short_name: fromHost };
+  }
+  return { name: "Visual Excellence Lab", short_name: "VIXL" };
+}
+
+export function renderWebManifest(hostHeader, site = {}) {
+  const { name, short_name } = pwaBrand(hostHeader, site);
   return JSON.stringify(
     {
       name,
-      short_name: name,
+      short_name,
       id: "/",
       start_url: "/",
       scope: "/",
@@ -385,54 +407,6 @@ export function stripShareMetaTags(html) {
   });
 }
 
-function metaContent(html, key) {
-  const pattern = new RegExp(
-    `<meta\\b[^>]*(?:property|name)\\s*=\\s*["']${key}["'][^>]*content\\s*=\\s*["']([^"']*)["'][^>]*>|<meta\\b[^>]*content\\s*=\\s*["']([^"']*)["'][^>]*(?:property|name)\\s*=\\s*["']${key}["'][^>]*>`,
-    "i",
-  );
-  const match = String(html).match(pattern);
-  return unescapeHtml((match && (match[1] || match[2])) || "").trim();
-}
-
-function isDefaultShareImage(url) {
-  return /\/og\.(jpg|png)(\?|$)/i.test(url) || /og\.grok\.me/i.test(url);
-}
-
-/** Work/pages may set their own og:* — keep those instead of the site card. */
-export function restorePageShareMeta(injected, original) {
-  let next = String(injected);
-  const title = metaContent(original, "og:title") || titleFromDocument(original);
-  const description = metaContent(original, "og:description");
-  const image = metaContent(original, "og:image");
-  if (title) {
-    next = next.replace(
-      /(<meta property="og:title" content=")[^"]*(")/,
-      `$1${escapeHtml(title)}$2`,
-    );
-  }
-  if (description && next.includes('property="og:description"')) {
-    next = next.replace(
-      /(<meta property="og:description" content=")[^"]*(")/,
-      `$1${escapeHtml(description)}$2`,
-    );
-  }
-  if (image && !isDefaultShareImage(image)) {
-    next = next.replace(
-      /(<meta property="og:image" content=")[^"]*(")/,
-      `$1${escapeHtml(image)}$2`,
-    );
-    next = next.replace(/<meta property="og:image:width" content="1200">/g, "");
-    next = next.replace(/<meta property="og:image:height" content="630">/g, "");
-    if (!/name="twitter:image"/i.test(next)) {
-      next = next.replace(
-        '<meta name="twitter:card" content="summary_large_image">',
-        `<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${escapeHtml(image)}">`,
-      );
-    }
-  }
-  return next;
-}
-
 function insertAfterHeadOpen(html, snippet) {
   if (/<head\b[^>]*>/i.test(html)) {
     return html.replace(/<head\b[^>]*>/i, (open) => `${open}${snippet}`);
@@ -494,7 +468,6 @@ export function injectGrokPwaHead(html, ctx = {}) {
     next,
     grokOgHeadTags({ host, appName, site, documentTitle, cwd }).join(""),
   );
-  next = restorePageShareMeta(next, html);
 
   if (!next.includes("/grok-app-builder/extensions.js")) {
     missing.push(...grokExtensionsHeadTags(projectId));
