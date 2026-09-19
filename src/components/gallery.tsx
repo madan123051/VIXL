@@ -1,19 +1,22 @@
 import { useMemo, useState } from "react";
-import { KIND_LABEL, WORKS, FILTERS, type FilterId, type Work } from "@/lib/media";
+import { KIND_LABEL, FILTERS, type FilterId, type Work } from "@/lib/media";
+import { useCatalog } from "@/lib/use-catalog";
 import { CinematicMedia } from "@/components/cinematic-media";
 import { Lightbox } from "@/components/lightbox";
 import { cn } from "@/lib/utils";
 
 export function Gallery() {
+  const { works: catalog } = useCatalog();
   const [filter, setFilter] = useState<FilterId>("all");
   const [openId, setOpenId] = useState<string | null>(null);
 
   const works = useMemo(
-    () => (filter === "all" ? WORKS : WORKS.filter((w) => w.kind === filter)),
-    [filter],
+    () => (filter === "all" ? catalog : catalog.filter((w) => w.kind === filter)),
+    [catalog, filter],
   );
 
-  const openWork: Work | undefined = works.find((w) => w.id === openId) ?? WORKS.find((w) => w.id === openId);
+  const openWork: Work | undefined =
+    works.find((w) => w.id === openId) ?? catalog.find((w) => w.id === openId);
 
   return (
     <section className="mx-auto max-w-[1600px] px-4 pt-14 md:px-6 md:pt-20" id="index">
@@ -89,14 +92,14 @@ export function Gallery() {
         onClose={() => setOpenId(null)}
         onPrev={() => {
           if (!openWork) return;
-          const list = works.length ? works : WORKS;
+          const list = works.length ? works : catalog;
           const i = list.findIndex((w) => w.id === openWork.id);
           const prev = list[(i - 1 + list.length) % list.length];
           if (prev) setOpenId(prev.id);
         }}
         onNext={() => {
           if (!openWork) return;
-          const list = works.length ? works : WORKS;
+          const list = works.length ? works : catalog;
           const i = list.findIndex((w) => w.id === openWork.id);
           const next = list[(i + 1) % list.length];
           if (next) setOpenId(next.id);

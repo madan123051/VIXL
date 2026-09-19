@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
-import { getFirebaseApp, getFirebaseAnalytics, logPageView } from "@/lib/firebase";
+import { ensureFirebaseAuth, getFirebaseAnalytics, logPageView } from "@/lib/firebase";
 
-/** Client-only: start Analytics and log a page view on each navigation. */
+/** Client-only: anonymous session, Analytics, page views. Catalog seed runs in useCatalog. */
 export function FirebaseBoot() {
   const href = useRouterState({ select: (s) => s.location.href });
 
   useEffect(() => {
-    getFirebaseApp();
-    void getFirebaseAnalytics();
+    void (async () => {
+      await ensureFirebaseAuth();
+      void getFirebaseAnalytics();
+    })();
   }, []);
 
   useEffect(() => {

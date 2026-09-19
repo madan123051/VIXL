@@ -1,6 +1,8 @@
 import { getApp, getApps, initializeApp, type FirebaseApp, type FirebaseOptions } from "firebase/app";
 import type { Analytics } from "firebase/analytics";
+import type { User } from "firebase/auth";
 import type { Database } from "firebase/database";
+import { CATALOG_SEED_PAYLOAD } from "@/lib/media";
 
 function readEnv(key: keyof ImportMetaEnv, fallback: string): string {
   const value = import.meta.env[key];
@@ -31,6 +33,8 @@ export function getFirebaseApp(): FirebaseApp | null {
 
 let analyticsPromise: Promise<Analytics | null> | null = null;
 let databasePromise: Promise<Database | null> | null = null;
+let authPromise: Promise<User | null> | null = null;
+let seeded = false;
 
 export function getFirebaseAnalytics(): Promise<Analytics | null> {
   if (typeof window === "undefined") return Promise.resolve(null);
@@ -53,6 +57,50 @@ export function getFirebaseDatabase(): Promise<Database | null> {
     return getDatabase(app);
   })().catch(() => null);
   return databasePromise;
+}
+
+/** Invisible anonymous session so RTDB rules `auth != null` can read/write. */
+export function ensureFirebaseAuth(): Promise<User | null> {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  authPromise ??= (async () => {
+    const app = getFirebaseApp();
+    if (!app) return null;
+    const { getAuth, onAuthStateChanged, signInAnonymously } = await import("firebase/auth");
+    const auth = getAuth(app);
+    if (auth.currentUser) return auth.currentUser;
+    const existing = await new Promise<User | null>((resolve) => {
+      const stop = onAuthStateChanged(auth, (user) => {
+        stop();
+        resolve(user);
+      });
+    });
+    if (existing) return existing;
+    const cred = await signInAnonymously(auth);
+    return cred.user;
+  })().catch(() => null);
+  return authPromise;
+}
+
+export async function seedCatalogIfEmpty(): Promise<boolean> {
+  if (typeof window === "undefined" || seeded) return false;
+  const db = await getFirebaseDatabase();
+  if (!db) return false;
+  try {
+    const { get, ref, set } = await import("firebase/database");
+    const snap = await get(ref(db, "catalog"));
+    if (snap.exists() && snap.val()) {
+      seeded = true;
+      return false;
+    }
+    await set(ref(db, "catalog"), {
+      ...CATALOG_SEED_PAYLOAD,
+      seededAt: new Date().toISOString(),
+    });
+    seeded = true;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function logPageView(path: string): Promise<void> {

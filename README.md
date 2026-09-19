@@ -9,7 +9,7 @@ Visual Excellence Lab — a black-field photography and motion studio. Still, ae
 - Motion
 - Nitro (Vercel output)
 - xAI Grok for Lab tagging (`XAI_API_KEY`)
-- Firebase (Analytics + Realtime Database marks)
+- Firebase (Analytics + Realtime Database catalog and marks)
 
 ## Local
 
@@ -31,13 +31,17 @@ Open the printed local URL. `npm run build` then `npm run preview` checks the pr
 
 ## Firebase
 
-Client SDK reads `VITE_FIREBASE_*` (see `.env.example`). Analytics logs page views. **Mark** on a frame writes a count to Realtime Database at `marks/{id}/count` — no sign-in. Same browser is remembered in `localStorage`.
+The catalog (13 frames, studio copy, hero) lives at Realtime Database path `catalog`. The app reads it live and, if the node is empty, writes the seed from `src/lib/catalog-data.json`. Frames still load from `/gallery` in this repo (Storage is not enabled on the project yet). **Mark** stores a count at `marks/{id}/count`.
 
-Publish these Realtime Database rules (Console → Realtime Database → Rules), or the marks will not persist:
+Publish these rules (Console → Realtime Database → Rules) so the seed can land and marks persist:
 
 ```json
 {
   "rules": {
+    "catalog": {
+      ".read": true,
+      ".write": "auth != null"
+    },
     "marks": {
       "$workId": {
         "count": {
@@ -51,7 +55,7 @@ Publish these Realtime Database rules (Console → Realtime Database → Rules),
 }
 ```
 
-A copy lives in `database.rules.json`.
+Then add your Vercel domain under Authentication → Settings → Authorized domains, reload the site once, and the catalog writes itself. Copy also in `database.rules.json`.
 
 ## Lab
 

@@ -4,7 +4,8 @@ import { CinematicMedia } from "@/components/cinematic-media";
 import { AiPanel } from "@/components/ai-panel";
 import { MarkButton } from "@/components/mark-button";
 import { Button } from "@/components/ui/button";
-import { KIND_LABEL, adjacentIds, getWork } from "@/lib/media";
+import { KIND_LABEL } from "@/lib/media";
+import { useCatalog } from "@/lib/use-catalog";
 
 export const Route = createFileRoute("/work/$id")({
   component: WorkRoom,
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/work/$id")({
 
 function WorkRoom() {
   const { id } = Route.useParams();
+  const { getWork, adjacentIds } = useCatalog();
   const work = getWork(id);
 
   if (!work) {

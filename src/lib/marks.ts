@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getFirebaseDatabase, logMarkFrame } from "@/lib/firebase";
+import { getFirebaseDatabase, ensureFirebaseAuth, logMarkFrame } from "@/lib/firebase";
 
 const LS_KEY = "vixl.marks";
 
@@ -29,6 +29,7 @@ export function useMark(workId: string) {
     let cancelled = false;
 
     void (async () => {
+      await ensureFirebaseAuth();
       const db = await getFirebaseDatabase();
       if (cancelled) return;
       if (!db) {
@@ -66,6 +67,7 @@ export function useMark(workId: string) {
     else local.delete(workId);
     writeLocal(local);
 
+    await ensureFirebaseAuth();
     const db = await getFirebaseDatabase();
     if (!db) {
       setPending(false);

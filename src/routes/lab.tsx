@@ -3,14 +3,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CinematicMedia } from "@/components/cinematic-media";
 import { AiPanel } from "@/components/ai-panel";
 import { Badge } from "@/components/ui/badge";
-import { KIND_LABEL, WORKS } from "@/lib/media";
+import { KIND_LABEL } from "@/lib/media";
+import { useCatalog } from "@/lib/use-catalog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/lab")({ component: Lab });
 
 function Lab() {
-  const [selectedId, setSelectedId] = useState(WORKS[0]?.id ?? "");
-  const work = WORKS.find((item) => item.id === selectedId) ?? WORKS[0];
+  const { works } = useCatalog();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const work = works.find((item) => item.id === selectedId) ?? works[0];
 
   if (!work) {
     return (
@@ -63,7 +65,7 @@ function Lab() {
           Select a frame
         </p>
         <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-          {WORKS.map((item) => {
+          {works.map((item) => {
             const active = item.id === work.id;
             return (
               <li key={item.id}>
