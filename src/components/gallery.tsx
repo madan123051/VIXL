@@ -75,6 +75,7 @@ export function Gallery() {
             <CinematicMedia
               work={work}
               priority={index < 3}
+              playback="still"
               className="vixl-media"
             />
             <div className="vixl-caption pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg via-bg/55 to-transparent px-3 pt-12 pb-3">

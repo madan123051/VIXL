@@ -74,8 +74,11 @@ export function workJsonLd(work: Work) {
       uploadDate: `${work.year}-01-01`,
       keywords: work.tags.join(", "),
       creator,
-      contentLocation: work.location,
+      publisher: creator,
+      contentLocation: { "@type": "Place", name: work.location },
       url: workCanonical(work.id),
+      mainEntityOfPage: workCanonical(work.id),
+      isFamilyFriendly: true,
     };
   }
   return {
@@ -108,9 +111,12 @@ export function workHead(work: Work) {
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:url", content: url },
-      { property: "og:type", content: "article" },
+      { property: "og:type", content: work.kind === "video" ? "video.other" : "article" },
       { property: "og:image", content: image },
       { property: "og:image:alt", content: work.title },
+      ...(work.kind === "video"
+        ? [{ property: "og:video", content: absoluteUrl(work.src) }]
+        : []),
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:site_name", content: SITE_NAME },
       { name: "twitter:title", content: title },

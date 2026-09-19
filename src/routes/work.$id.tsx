@@ -85,6 +85,7 @@ function WorkRoom() {
             <CinematicMedia
               work={work}
               priority
+              playback={work.kind === "video" ? "watch" : "still"}
               className="h-auto max-h-[78svh] w-auto max-w-full"
             />
           </div>

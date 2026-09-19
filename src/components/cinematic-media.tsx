@@ -9,6 +9,8 @@ type Props = {
   className?: string;
   priority?: boolean;
   kenBurns?: boolean;
+  /** still = poster only (index tiles). auto = muted loop. watch = player. */
+  playback?: "auto" | "watch" | "still";
 };
 
 function CopyrightBug() {
@@ -27,15 +29,24 @@ function CopyrightBug() {
   );
 }
 
-export function CinematicMedia({ work, className, priority, kenBurns }: Props) {
+export function CinematicMedia({
+  work,
+  className,
+  priority,
+  kenBurns,
+  playback,
+}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const reduced = useReducedMotion();
   const isVideo = work.kind === "video";
+  const mode = playback ?? (isVideo ? "auto" : "still");
   const abs = /\babsolute\b/.test(className ?? "");
+  const showVideo = isVideo && mode !== "still";
+  const watch = mode === "watch";
 
   useEffect(() => {
     const el = videoRef.current;
-    if (!isVideo || !el) return;
+    if (!showVideo || watch || !el) return;
 
     const io = new IntersectionObserver(
       ([entry]) => {
@@ -52,7 +63,9 @@ export function CinematicMedia({ work, className, priority, kenBurns }: Props) {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [isVideo, reduced]);
+  }, [showVideo, watch, reduced]);
+
+  const stillSrc = work.poster || work.src;
 
   return (
     <span
@@ -61,7 +74,7 @@ export function CinematicMedia({ work, className, priority, kenBurns }: Props) {
         abs ? "absolute inset-0 block h-full w-full" : "relative block w-full",
       )}
     >
-      {isVideo ? (
+      {showVideo ? (
         <video
           ref={videoRef}
           className={cn(
@@ -71,17 +84,18 @@ export function CinematicMedia({ work, className, priority, kenBurns }: Props) {
             abs && "absolute inset-0 h-full w-full",
           )}
           poster={work.poster}
-          muted
-          loop
+          muted={!watch}
+          loop={!watch}
+          controls={watch}
           playsInline
-          preload={priority ? "auto" : "metadata"}
+          preload={priority || watch ? "auto" : "metadata"}
           aria-label={work.title}
         >
           <source src={work.src} type="video/mp4" />
         </video>
       ) : (
         <img
-          src={work.src}
+          src={isVideo ? stillSrc : work.src}
           alt={work.title}
           className={cn(
             "h-auto max-w-full",
