@@ -588,6 +588,17 @@ export function AdminDesk({ email }: { email: string }) {
                 }
               />
             </Field>
+            <Field label="Subtitle">
+              <Input
+                value={catalog.site.subtitle}
+                onChange={(e) =>
+                  void persist({
+                    ...catalog,
+                    site: { ...catalog.site, subtitle: e.target.value },
+                  })
+                }
+              />
+            </Field>
             <Field label="Headline">
               <Textarea
                 value={catalog.site.headline}
