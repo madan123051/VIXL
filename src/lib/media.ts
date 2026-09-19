@@ -180,3 +180,23 @@ export function adjacentIds(id: string, list: Work[] = WORKS): { prev: string; n
 }
 
 export const CATALOG_SEED_PAYLOAD = seed;
+
+export function catalogToPayload(catalog: Catalog) {
+  const works: Record<string, Work> = {};
+  const order: string[] = [];
+  for (const work of catalog.works) {
+    const row: Work = { ...work };
+    if (!row.poster) delete row.poster;
+    works[work.id] = row;
+    order.push(work.id);
+  }
+  return {
+    heroId: catalog.heroId,
+    site: catalog.site,
+    studio: catalog.studio,
+    order,
+    works,
+    updatedAt: new Date().toISOString(),
+  };
+}
+

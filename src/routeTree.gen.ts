@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as WorkIdRouteImport } from './routes/work.$id'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LabRoute = LabRouteImport.update({
@@ -38,12 +44,14 @@ const WorkIdRoute = WorkIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
   '/lab': typeof LabRoute
   '/work/$id': typeof WorkIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
   '/lab': typeof LabRoute
   '/work/$id': typeof WorkIdRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
   '/lab': typeof LabRoute
   '/work/$id': typeof WorkIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/lab' | '/work/$id'
+  fullPaths: '/' | '/about' | '/admin' | '/lab' | '/work/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/lab' | '/work/$id'
-  id: '__root__' | '/' | '/about' | '/lab' | '/work/$id'
+  to: '/' | '/about' | '/admin' | '/lab' | '/work/$id'
+  id: '__root__' | '/' | '/about' | '/admin' | '/lab' | '/work/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRoute
   LabRoute: typeof LabRoute
   WorkIdRoute: typeof WorkIdRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lab': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRoute,
   LabRoute: LabRoute,
   WorkIdRoute: WorkIdRoute,
 }

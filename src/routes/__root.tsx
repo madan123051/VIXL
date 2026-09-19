@@ -3,6 +3,7 @@ import {
   HeadContent,
   Outlet,
   Scripts,
+  useRouterState,
 } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
@@ -49,6 +50,9 @@ export const Route = createRootRoute({
 });
 
 function RootDocument() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const desk = pathname.startsWith("/admin");
+
   return (
     <html lang="en" className="dark antialiased" suppressHydrationWarning>
       <head>
@@ -59,9 +63,9 @@ function RootDocument() {
         <FirebaseBoot />
         <AuthProvider>
           <TooltipProvider>
-            <Navbar />
+            {desk ? null : <Navbar />}
             <Outlet />
-            <Footer />
+            {desk ? null : <Footer />}
             <Toaster
               theme="dark"
               position="bottom-center"

@@ -7,7 +7,7 @@ import {
   type Catalog,
   type Work,
 } from "@/lib/media";
-import { ensureFirebaseAuth, getFirebaseDatabase, seedCatalogIfEmpty } from "@/lib/firebase";
+import { ensureFirebaseAuth, getFirebaseDatabase } from "@/lib/firebase";
 
 export function useCatalog() {
   const [catalog, setCatalog] = useState<Catalog>(SEED_CATALOG);
@@ -19,7 +19,6 @@ export function useCatalog() {
 
     void (async () => {
       await ensureFirebaseAuth();
-      await seedCatalogIfEmpty();
       const db = await getFirebaseDatabase();
       if (!db || cancelled) return;
       const { onValue, ref } = await import("firebase/database");

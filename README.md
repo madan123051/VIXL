@@ -57,6 +57,14 @@ Publish these rules (Console → Realtime Database → Rules) so the seed can la
 
 Then add your Vercel domain under Authentication → Settings → Authorized domains, reload the site once, and the catalog writes itself. Copy also in `database.rules.json`.
 
+## Admin desk
+
+URL: `/admin`. Email is `VITE_ADMIN_EMAIL` (`help@wildsaura.com` on Vercel). Create that user in Firebase Authentication → Users and set the password there.
+
+Desk controls: upload media, edit frames, reorder, hero, studio/about copy, site copy, and mark counts.
+
+Publish `database.rules.json` so only that email can write `catalog`. If uploads fail, enable Storage and publish `storage.rules`. Add the live domain under Authorized domains.
+
 ## Lab
 
 Open **Lab**, pick a frame, tap **Read this frame**. Results cache in the browser. Calls are user-initiated and not run on page load.

@@ -2,7 +2,9 @@ import { getApp, getApps, initializeApp, type FirebaseApp, type FirebaseOptions 
 import type { Analytics } from "firebase/analytics";
 import type { User } from "firebase/auth";
 import type { Database } from "firebase/database";
-import { CATALOG_SEED_PAYLOAD } from "@/lib/media";
+import type { FirebaseStorage } from "firebase/storage";
+import { ADMIN_EMAIL, isAdminEmail } from "@/lib/admin";
+import { CATALOG_SEED_PAYLOAD, catalogToPayload, type Catalog } from "@/lib/media";
 
 function readEnv(key: keyof ImportMetaEnv, fallback: string): string {
   const value = import.meta.env[key];
@@ -33,6 +35,7 @@ export function getFirebaseApp(): FirebaseApp | null {
 
 let analyticsPromise: Promise<Analytics | null> | null = null;
 let databasePromise: Promise<Database | null> | null = null;
+let storagePromise: Promise<FirebaseStorage | null> | null = null;
 let authPromise: Promise<User | null> | null = null;
 let seeded = false;
 
@@ -113,9 +116,64 @@ export async function logPageView(path: string): Promise<void> {
   });
 }
 
+export function getFirebaseStorage(): Promise<FirebaseStorage | null> {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  storagePromise ??= (async () => {
+    const app = getFirebaseApp();
+    if (!app) return null;
+    const { getStorage } = await import("firebase/storage");
+    return getStorage(app);
+  })().catch(() => null);
+  return storagePromise;
+}
+
+export async function signInAdmin(email: string, password: string): Promise<User> {
+  const app = getFirebaseApp();
+  if (!app) throw new Error("Firebase is not configured.");
+  const { getAuth, signInWithEmailAndPassword } = await import("firebase/auth");
+  const auth = getAuth(app);
+  const cred = await signInWithEmailAndPassword(auth, email.trim(), password);
+  if (!isAdminEmail(cred.user.email)) {
+    await auth.signOut();
+    authPromise = null;
+    throw new Error("This account is not the studio desk.");
+  }
+  authPromise = Promise.resolve(cred.user);
+  return cred.user;
+}
+
+export async function signOutAdmin(): Promise<void> {
+  const app = getFirebaseApp();
+  if (!app) return;
+  const { getAuth } = await import("firebase/auth");
+  await getAuth(app).signOut();
+  authPromise = null;
+  await ensureFirebaseAuth();
+}
+
+export async function saveCatalog(catalog: Catalog): Promise<void> {
+  const db = await getFirebaseDatabase();
+  if (!db) throw new Error("Database is not available.");
+  const { ref, set } = await import("firebase/database");
+  await set(ref(db, "catalog"), catalogToPayload(catalog));
+}
+
+export async function uploadGalleryFile(file: File, folder: string): Promise<string> {
+  const storage = await getFirebaseStorage();
+  if (!storage) throw new Error("Storage is not available. Enable it in Firebase Console.");
+  const safe = file.name.replace(/[^\w.\-]+/g, "-").toLowerCase();
+  const path = `${folder}/${Date.now()}-${safe}`;
+  const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+  const fileRef = ref(storage, path);
+  await uploadBytes(fileRef, file, { contentType: file.type || undefined });
+  return getDownloadURL(fileRef);
+}
+
 export async function logMarkFrame(workId: string, marked: boolean): Promise<void> {
   const analytics = await getFirebaseAnalytics();
   if (!analytics) return;
   const { logEvent } = await import("firebase/analytics");
   logEvent(analytics, marked ? "mark_frame" : "unmark_frame", { item_id: workId });
 }
+
+export { ADMIN_EMAIL, isAdminEmail };
