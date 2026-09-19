@@ -264,6 +264,28 @@ export function grokExtensionsHeadTags(projectId = readGrokProjectId()) {
   return tags;
 }
 
+/** Preview/grok.me only. Custom domains 403 that script and fail PageSpeed. */
+export function shouldInjectGrokExtensions(hostHeader) {
+  const host = String(hostHeader ?? "")
+    .split(",")[0]
+    .trim()
+    .split(":")[0]
+    .toLowerCase();
+  if (!host) return true;
+  if (host === "localhost" || host.endsWith(".localhost")) return true;
+  return host.endsWith(".grok.me");
+}
+
+export function stripGrokBuilderChrome(html) {
+  return String(html)
+    .replace(
+      /<script\b[^>]*src=["'][^"']*grok-app-builder\/extensions\.js[^"']*["'][^>]*>\s*<\/script>/gi,
+      "",
+    )
+    .replace(/<meta\b[^>]*name=["']grok-project-id["'][^>]*>/gi, "")
+    .replace(/<meta\b[^>]*property=["']grok:app_id["'][^>]*>/gi, "");
+}
+
 export function readOgSite(cwd = process.cwd()) {
   try {
     const raw = readFileSync(join(cwd, OG_SITE_REL_PATH), "utf8");
@@ -469,17 +491,21 @@ export function injectGrokPwaHead(html, ctx = {}) {
     grokOgHeadTags({ host, appName, site, documentTitle, cwd }).join(""),
   );
 
-  if (!next.includes("/grok-app-builder/extensions.js")) {
-    missing.push(...grokExtensionsHeadTags(projectId));
-  } else if (projectId && !next.includes('name="grok-project-id"')) {
-    missing.push(`<meta name="grok-project-id" content="${escapeHtml(projectId)}">`);
-  }
-  if (
-    projectId &&
-    !next.includes('property="grok:app_id"') &&
-    !next.includes("property='grok:app_id'")
-  ) {
-    missing.push(`<meta property="grok:app_id" content="${escapeHtml(projectId)}">`);
+  if (shouldInjectGrokExtensions(host)) {
+    if (!next.includes("/grok-app-builder/extensions.js")) {
+      missing.push(...grokExtensionsHeadTags(projectId));
+    } else if (projectId && !next.includes('name="grok-project-id"')) {
+      missing.push(`<meta name="grok-project-id" content="${escapeHtml(projectId)}">`);
+    }
+    if (
+      projectId &&
+      !next.includes('property="grok:app_id"') &&
+      !next.includes("property='grok:app_id'")
+    ) {
+      missing.push(`<meta property="grok:app_id" content="${escapeHtml(projectId)}">`);
+    }
+  } else {
+    next = stripGrokBuilderChrome(next);
   }
   const creatorTags = grokXCreatorHeadTags(creator, creatorId);
   if (creatorTags.length > 0) {
