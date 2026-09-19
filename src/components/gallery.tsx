@@ -78,8 +78,8 @@ export function Gallery() {
               playback="still"
               className="vixl-media"
             />
-            <div className="vixl-caption pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg via-bg/55 to-transparent px-3 pt-12 pb-3">
-              <p className="font-display text-sm tracking-tight text-fg">
+            <div className="vixl-caption pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg via-bg/55 to-transparent px-3 pt-12 pb-4">
+              <p className="font-display text-sm leading-snug text-fg">
                 {work.title}
               </p>
               <p className="mt-0.5 text-xs tracking-[0.16em] text-muted uppercase">

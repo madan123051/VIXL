@@ -50,7 +50,7 @@ function About() {
         </motion.p>
         <motion.h1
           variants={rise}
-          className="font-display mt-4 text-4xl leading-[1.18] font-semibold tracking-[-0.03em] md:text-6xl"
+          className="font-display mt-4 overflow-visible text-4xl leading-[1.28] font-semibold tracking-[-0.03em] md:text-6xl"
         >
           {line1}
           {line2 ? (

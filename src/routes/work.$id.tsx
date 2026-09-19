@@ -96,7 +96,7 @@ function WorkRoom() {
             <p className="text-xs tracking-[0.18em] text-muted uppercase">
               {KIND_LABEL[work.kind]} · {work.year}
             </p>
-            <h1 className="font-display mt-2 text-3xl tracking-tight md:text-5xl">
+            <h1 className="font-display mt-2 overflow-visible text-3xl leading-snug tracking-tight md:text-5xl">
               {work.title}
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
