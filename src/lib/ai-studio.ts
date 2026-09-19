@@ -39,14 +39,106 @@ function requireKey(): string | Fail {
   return apiKey;
 }
 
+const RATIOS = new Set([
+  "1:1",
+  "16:9",
+  "9:16",
+  "4:3",
+  "3:4",
+  "3:2",
+  "2:3",
+  "2:1",
+  "1:2",
+  "21:9",
+]);
+
 function aspectFor(kind: MediaKind): string {
   if (kind === "drone" || kind === "video") return "16:9";
   return "3:2";
 }
 
-function sizeFor(kind: MediaKind): { width: number; height: number } {
-  if (kind === "drone" || kind === "video") return { width: 1920, height: 1080 };
-  return { width: 1728, height: 1152 };
+function sizeFromRatio(ratio: string, kind: MediaKind): { width: number; height: number } {
+  const map: Record<string, [number, number]> = {
+    "16:9": [1920, 1080],
+    "9:16": [1080, 1920],
+    "3:2": [1800, 1200],
+    "2:3": [1200, 1800],
+    "4:3": [1600, 1200],
+    "3:4": [1200, 1600],
+    "1:1": [1400, 1400],
+    "2:1": [1920, 960],
+    "1:2": [960, 1920],
+    "21:9": [2048, 878],
+  };
+  const pair = map[ratio];
+  if (pair) return { width: pair[0], height: pair[1] };
+  return kind === "drone" || kind === "video"
+    ? { width: 1920, height: 1080 }
+    : { width: 1800, height: 1200 };
+}
+
+type ShotPlan = { brief: string; aspect_ratio: string };
+
+async function planShot(prompt: string, kind: MediaKind): Promise<ShotPlan> {
+  const fallback: ShotPlan = {
+    brief: `${prompt.trim()}. ${STYLE} Fill the entire frame. No letterbox, no borders, no empty margins.`,
+    aspect_ratio: aspectFor(kind),
+  };
+  const apiKey = process.env.XAI_API_KEY;
+  if (!apiKey) return fallback;
+  try {
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      signal: AbortSignal.timeout(20000),
+      body: JSON.stringify({
+        model: "grok-4.5",
+        temperature: 0.6,
+        max_tokens: 500,
+        reasoning_effort: "low",
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are director of photography at VIXL. Expand even a one-word note into a finished still. JSON only.",
+          },
+          {
+            role: "user",
+            content: `Kind: ${kind}
+Note: ${prompt.trim()}
+
+Return:
+{
+  "brief": "90-160 words. Subject, light, lens, color, composition. Photoreal. Fill the whole frame edge to edge. No text, watermark, border, or letterbox.",
+  "aspect_ratio": "one of 3:2, 2:3, 16:9, 9:16, 4:3, 3:4, 1:1"
+}
+
+Pick the ratio for the picture, not the website. Portraits and window figures: 2:3 or 3:4. Land, sea, aerial: 16:9 or 3:2. Square objects: 1:1.`,
+          },
+        ],
+      }),
+    });
+    if (!res.ok) return fallback;
+    const body = (await res.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    const raw = body.choices?.[0]?.message?.content ?? "";
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start < 0 || end <= start) return fallback;
+    const rec = asRecord(JSON.parse(raw.slice(start, end + 1)));
+    const ratio = asString(rec.aspect_ratio, fallback.aspect_ratio);
+    return {
+      brief: asString(rec.brief, fallback.brief),
+      aspect_ratio: RATIOS.has(ratio) ? ratio : fallback.aspect_ratio,
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 async function readError(res: Response): Promise<string> {
@@ -65,10 +157,14 @@ async function readError(res: Response): Promise<string> {
   return `Image generation failed (${res.status}).`;
 }
 
-async function xaiImage(prompt: string, kind: MediaKind): Promise<ImageOk | Fail> {
+async function xaiImage(
+  prompt: string,
+  kind: MediaKind,
+  aspect = aspectFor(kind),
+): Promise<ImageOk | Fail> {
   const apiKey = requireKey();
   if (typeof apiKey !== "string") return apiKey;
-  const { width, height } = sizeFor(kind);
+  const { width, height } = sizeFromRatio(aspect, kind);
   const models = ["grok-imagine-image-2.0", "grok-imagine-image-quality", "grok-imagine-image"];
   let lastError = "Image generation failed.";
 
@@ -83,10 +179,10 @@ async function xaiImage(prompt: string, kind: MediaKind): Promise<ImageOk | Fail
         signal: AbortSignal.timeout(90000),
         body: JSON.stringify({
           model,
-          prompt: `${prompt.trim()}. ${STYLE}`,
+          prompt,
           n: 1,
-          resolution: "1k",
-          aspect_ratio: aspectFor(kind),
+          resolution: "2k",
+          aspect_ratio: aspect,
         }),
       });
       if (!res.ok) {
@@ -131,7 +227,9 @@ export const generateStill = createServerFn({ method: "POST" })
   .validator((input: { prompt: string; kind: MediaKind }) => input)
   .handler(async ({ data }): Promise<ImageOk | Fail> => {
     if (!data.prompt.trim()) return { ok: false, error: "Write what you want to see." };
-    return xaiImage(data.prompt, data.kind === "video" ? "drone" : data.kind);
+    const kind = data.kind === "video" ? "drone" : data.kind;
+    const plan = await planShot(data.prompt, kind);
+    return xaiImage(plan.brief, kind, plan.aspect_ratio);
   });
 
 export const generateMotion = createServerFn({ method: "POST" })
@@ -141,9 +239,11 @@ export const generateMotion = createServerFn({ method: "POST" })
     if (typeof apiKey !== "string") return apiKey;
     if (!data.prompt.trim()) return { ok: false, error: "Write the motion you want." };
 
+    const plan = await planShot(data.prompt, "video");
     const still = await xaiImage(
-      `${data.prompt.trim()}. Establishing still, almost no motion.`,
+      `${plan.brief} Establishing still, almost no motion. Widescreen 16:9, fill the frame.`,
       "video",
+      "16:9",
     );
     if (!still.ok) return still;
 
@@ -158,7 +258,7 @@ export const generateMotion = createServerFn({ method: "POST" })
         signal: AbortSignal.timeout(30000),
         body: JSON.stringify({
           model: "grok-imagine-video-1.5",
-          prompt: `${data.prompt.trim()}. Almost still cinematic loop, muted, slow, VIXL house style. No text.`,
+          prompt: `${plan.brief} Almost still cinematic loop, muted, slow. Fill the frame. No text.`,
           image: { url: stillUrl },
           duration: 6,
           resolution: "720p",
@@ -281,7 +381,7 @@ Prefer kind "${kindHint}" unless the picture clearly disagrees.`;
       const tags = Array.isArray(rec.tags)
         ? rec.tags.filter((t): t is string => typeof t === "string" && t.trim().length > 0)
         : [];
-      const size = sizeFor(kind);
+      const size = sizeFromRatio(aspectFor(kind), kind);
       return {
         ok: true,
         meta: {

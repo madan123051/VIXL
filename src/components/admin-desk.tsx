@@ -349,13 +349,13 @@ export function AdminDesk({ email }: { email: string }) {
                     ? "Live on the site. Save edits, or unpublish to hide it."
                     : "Draft — visitors cannot see this until you publish."}
                 </p>
-                <div className="overflow-hidden rounded-lg bg-surface">
+                <div className="flex justify-center overflow-hidden rounded-lg bg-surface">
                   {selected.src ? (
                     selected.kind === "video" ? (
                       <video
                         src={selected.src}
                         poster={selected.poster}
-                        className="max-h-[42svh] w-full object-contain"
+                        className="h-auto max-h-[42svh] w-auto max-w-full"
                         controls
                         muted
                         playsInline
@@ -364,7 +364,7 @@ export function AdminDesk({ email }: { email: string }) {
                       <img
                         src={selected.src}
                         alt={selected.title}
-                        className="max-h-[42svh] w-full object-contain"
+                        className="h-auto max-h-[42svh] w-auto max-w-full"
                       />
                     )
                   ) : (

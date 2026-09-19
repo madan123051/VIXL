@@ -80,12 +80,14 @@ function WorkRoom() {
       </Button>
 
       <article>
-        <div className="mt-6 overflow-hidden rounded-lg bg-surface">
-          <CinematicMedia
-            work={work}
-            priority
-            className="max-h-[78svh] w-full object-contain"
-          />
+        <div className="mt-6 flex justify-center">
+          <div className="w-fit max-w-full overflow-hidden rounded-lg bg-surface">
+            <CinematicMedia
+              work={work}
+              priority
+              className="h-auto max-h-[78svh] w-auto max-w-full"
+            />
+          </div>
         </div>
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,22rem)]">

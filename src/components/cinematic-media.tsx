@@ -58,7 +58,7 @@ export function CinematicMedia({ work, className, priority, kenBurns }: Props) {
     <span
       className={cn(
         "vixl-frame isolate",
-        abs ? "absolute inset-0 block h-full w-full" : "relative inline-block max-w-full",
+        abs ? "absolute inset-0 block h-full w-full" : "relative block w-full",
       )}
     >
       {isVideo ? (
@@ -75,8 +75,6 @@ export function CinematicMedia({ work, className, priority, kenBurns }: Props) {
           loop
           playsInline
           preload={priority ? "auto" : "metadata"}
-          width={work.width}
-          height={work.height}
           aria-label={work.title}
         >
           <source src={work.src} type="video/mp4" />
@@ -85,8 +83,6 @@ export function CinematicMedia({ work, className, priority, kenBurns }: Props) {
         <img
           src={work.src}
           alt={work.title}
-          width={work.width}
-          height={work.height}
           className={cn(
             "h-auto max-w-full",
             kenBurns && reduced !== true && "hero-media",
