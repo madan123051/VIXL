@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { useLayoutEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { CinematicMedia } from "@/components/cinematic-media";
 import { AiPanel } from "@/components/ai-panel";
@@ -7,27 +8,50 @@ import { ShareButton } from "@/components/share-button";
 import { Comments } from "@/components/comments";
 import { JsonLd } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
-import { getWork, KIND_LABEL } from "@/lib/media";
+import { fetchWorkById } from "@/lib/catalog-api";
+import { KIND_LABEL } from "@/lib/media";
 import { useCatalog } from "@/lib/use-catalog";
 import { workHead, workJsonLd } from "@/lib/seo";
 
 export const Route = createFileRoute("/work/$id")({
-  component: WorkRoom,
-  head: ({ params }) => {
-    const work = getWork(params.id);
+  loader: async ({ params }) => ({ work: await fetchWorkById(params.id) }),
+  head: ({ loaderData }) => {
+    const work = loaderData?.work;
     if (!work) {
       return {
-        meta: [{ title: "Frame not in the catalog | VIXL" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Frame not in the catalog | VIXL" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     }
     return workHead(work);
   },
+  component: WorkRoom,
 });
 
 function WorkRoom() {
   const { id } = Route.useParams();
-  const { getWork: liveGet, adjacentIds } = useCatalog();
-  const work = liveGet(id);
+  const loaded = Route.useLoaderData();
+  const live = useCatalog();
+  const work = live.getWork(id) ?? loaded.work ?? null;
+  const waiting = !work && live.source !== "firebase";
+
+  useLayoutEffect(() => {
+    if (!work || typeof window === "undefined") return;
+    if (window.location.hash) return;
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [work?.id]);
+
+  if (waiting) {
+    return (
+      <main className="mx-auto max-w-[1400px] px-4 py-10 md:px-6 md:py-14">
+        <div className="bg-surface vixl-shimmer h-[70svh] rounded-lg" />
+      </main>
+    );
+  }
 
   if (!work) {
     return (
@@ -43,7 +67,7 @@ function WorkRoom() {
     );
   }
 
-  const { prev, next } = adjacentIds(work.id);
+  const { prev, next } = live.adjacentIds(work.id);
 
   return (
     <main className="mx-auto max-w-[1400px] px-4 py-10 md:px-6 md:py-14">

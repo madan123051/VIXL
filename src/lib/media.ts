@@ -69,6 +69,10 @@ function asWork(value: unknown): Work | null {
   };
 }
 
+export function parseWork(value: unknown): Work | null {
+  return asWork(value);
+}
+
 export function parseCatalog(raw: unknown): Catalog | null {
   if (!raw || typeof raw !== "object") return null;
   const data = raw as Record<string, unknown>;
