@@ -1,8 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
+import { JsonLd } from "@/components/json-ld";
 import { useCatalog } from "@/lib/use-catalog";
+import { SEED_CATALOG } from "@/lib/media";
+import { SITE_NAME, SITE_URL, staticHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/about")({ component: About });
+export const Route = createFileRoute("/about")({
+  component: About,
+  head: () =>
+    staticHead({
+      title: "Studio",
+      description: SEED_CATALOG.studio.paragraphs[0] ?? "VIXL studio.",
+      path: "/about",
+      keywords: "VIXL studio, photography studio Tokyo, aerial, still, motion",
+    }),
+});
 
 const rise = {
   hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
@@ -16,6 +28,15 @@ function About() {
 
   return (
     <main className="mx-auto min-h-[70svh] max-w-3xl px-4 py-16 md:px-6 md:py-24">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "VIXL Studio",
+          url: `${SITE_URL}/about`,
+          publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+        }}
+      />
       <motion.div
         initial={reduced ? false : "hidden"}
         animate="visible"

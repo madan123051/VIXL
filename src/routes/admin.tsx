@@ -6,7 +6,10 @@ import { useAdminSession } from "@/lib/use-admin";
 export const Route = createFileRoute("/admin")({
   component: AdminRoute,
   head: () => ({
-    meta: [{ title: "VIXL Desk" }],
+    meta: [
+      { title: "VIXL Desk" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
   }),
 });
 

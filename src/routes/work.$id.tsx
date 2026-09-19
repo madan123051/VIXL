@@ -3,18 +3,31 @@ import { ArrowLeft } from "lucide-react";
 import { CinematicMedia } from "@/components/cinematic-media";
 import { AiPanel } from "@/components/ai-panel";
 import { MarkButton } from "@/components/mark-button";
+import { ShareButton } from "@/components/share-button";
+import { Comments } from "@/components/comments";
+import { JsonLd } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
-import { KIND_LABEL } from "@/lib/media";
+import { getWork, KIND_LABEL } from "@/lib/media";
 import { useCatalog } from "@/lib/use-catalog";
+import { workHead, workJsonLd } from "@/lib/seo";
 
 export const Route = createFileRoute("/work/$id")({
   component: WorkRoom,
+  head: ({ params }) => {
+    const work = getWork(params.id);
+    if (!work) {
+      return {
+        meta: [{ title: "Frame not in the catalog | VIXL" }, { name: "robots", content: "noindex" }],
+      };
+    }
+    return workHead(work);
+  },
 });
 
 function WorkRoom() {
   const { id } = Route.useParams();
-  const { getWork, adjacentIds } = useCatalog();
-  const work = getWork(id);
+  const { getWork: liveGet, adjacentIds } = useCatalog();
+  const work = liveGet(id);
 
   if (!work) {
     return (
@@ -34,6 +47,7 @@ function WorkRoom() {
 
   return (
     <main className="mx-auto max-w-[1400px] px-4 py-10 md:px-6 md:py-14">
+      <JsonLd data={workJsonLd(work)} />
       <Button variant="ghost" size="sm" asChild>
         <Link to="/">
           <ArrowLeft className="size-4" strokeWidth={1.5} />
@@ -41,63 +55,85 @@ function WorkRoom() {
         </Link>
       </Button>
 
-      <div className="mt-6 overflow-hidden rounded-lg bg-surface">
-        <CinematicMedia
-          work={work}
-          priority
-          className="max-h-[78svh] w-full object-contain"
-        />
-      </div>
-
-      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,22rem)]">
-        <div>
-          <p className="text-xs tracking-[0.18em] text-muted uppercase">
-            {KIND_LABEL[work.kind]} · {work.year}
-          </p>
-          <h1 className="font-display mt-2 text-3xl tracking-tight md:text-5xl">
-            {work.title}
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
-            {work.description}
-          </p>
-          <div className="mt-6">
-            <MarkButton workId={work.id} title={work.title} />
-          </div>
-          <dl className="mt-8 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
-            <div>
-              <dt className="text-xs tracking-[0.14em] text-subtle uppercase">
-                Location
-              </dt>
-              <dd className="mt-1 text-fg">{work.location}</dd>
-            </div>
-            <div>
-              <dt className="text-xs tracking-[0.14em] text-subtle uppercase">
-                Camera
-              </dt>
-              <dd className="mt-1 text-fg">{work.camera}</dd>
-            </div>
-            <div>
-              <dt className="text-xs tracking-[0.14em] text-subtle uppercase">
-                Lens
-              </dt>
-              <dd className="mt-1 text-fg">{work.lens}</dd>
-            </div>
-          </dl>
-          <div className="mt-10 flex gap-3">
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/work/$id" params={{ id: prev }}>
-                Previous
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/work/$id" params={{ id: next }}>
-                Next
-              </Link>
-            </Button>
-          </div>
+      <article>
+        <div className="mt-6 overflow-hidden rounded-lg bg-surface">
+          <CinematicMedia
+            work={work}
+            priority
+            className="max-h-[78svh] w-full object-contain"
+          />
         </div>
-        <AiPanel work={work} />
-      </div>
+
+        <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(280px,22rem)]">
+          <div>
+            <p className="text-xs tracking-[0.18em] text-muted uppercase">
+              {KIND_LABEL[work.kind]} · {work.year}
+            </p>
+            <h1 className="font-display mt-2 text-3xl tracking-tight md:text-5xl">
+              {work.title}
+            </h1>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
+              {work.description}
+            </p>
+            {work.tags.length ? (
+              <ul className="mt-5 flex flex-wrap gap-2">
+                {work.tags.map((tag) => (
+                  <li
+                    key={tag}
+                    className="rounded-full px-3 py-1 text-xs tracking-[0.08em] text-muted shadow-border"
+                  >
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <MarkButton workId={work.id} title={work.title} />
+              <ShareButton work={work} />
+              <a
+                href="#comments"
+                className="inline-flex h-11 items-center rounded-full px-4 text-sm tracking-tight text-muted shadow-border transition-[background-color,color] duration-150 hover:bg-fg/8 hover:text-fg"
+              >
+                Comment
+              </a>
+            </div>
+            <dl className="mt-8 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
+              <div>
+                <dt className="text-xs tracking-[0.14em] text-subtle uppercase">
+                  Location
+                </dt>
+                <dd className="mt-1 text-fg">{work.location}</dd>
+              </div>
+              <div>
+                <dt className="text-xs tracking-[0.14em] text-subtle uppercase">
+                  Camera
+                </dt>
+                <dd className="mt-1 text-fg">{work.camera}</dd>
+              </div>
+              <div>
+                <dt className="text-xs tracking-[0.14em] text-subtle uppercase">
+                  Lens
+                </dt>
+                <dd className="mt-1 text-fg">{work.lens}</dd>
+              </div>
+            </dl>
+            <div className="mt-10 flex gap-3">
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/work/$id" params={{ id: prev }}>
+                  Previous
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/work/$id" params={{ id: next }}>
+                  Next
+                </Link>
+              </Button>
+            </div>
+            <Comments workId={work.id} title={work.title} />
+          </div>
+          <AiPanel work={work} />
+        </div>
+      </article>
     </main>
   );
 }

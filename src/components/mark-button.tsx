@@ -1,4 +1,4 @@
-import { Bookmark } from "lucide-react";
+import { Heart } from "lucide-react";
 import { useMark } from "@/lib/marks";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +17,7 @@ export function MarkButton({ workId, title, className }: Props) {
       onClick={() => void toggle()}
       disabled={pending}
       aria-pressed={marked}
-      aria-label={marked ? `Unmark ${title}` : `Mark ${title}`}
+      aria-label={marked ? `Unlike ${title}` : `Like ${title}`}
       className={cn(
         "inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm tracking-tight transition-[background-color,color] duration-150",
         marked
@@ -26,12 +26,12 @@ export function MarkButton({ workId, title, className }: Props) {
         className,
       )}
     >
-      <Bookmark
+      <Heart
         className="size-4"
         strokeWidth={1.5}
         fill={marked ? "currentColor" : "none"}
       />
-      <span>{marked ? "Marked" : "Mark"}</span>
+      <span>{marked ? "Liked" : "Like"}</span>
       <span className="font-mono text-xs tabular-nums opacity-80">{count}</span>
     </button>
   );

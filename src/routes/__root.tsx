@@ -42,6 +42,7 @@ export const Route = createRootRoute({
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter+Tight:ital,wght@0,400;0,500;0,600;1,400&family=Syne:wght@500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
+      { rel: "sitemap", type: "application/xml", href: "/sitemap.xml" },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
     ],

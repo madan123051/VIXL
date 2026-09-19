@@ -69,6 +69,10 @@ Publish `database.rules.json` so only that email can write `catalog`. If uploads
 
 Open **Lab**, pick a frame, tap **Read this frame**. Results cache in the browser. Calls are user-initiated and not run on page load.
 
+## SEO
+
+Each frame is a unique URL `/work/{id}` with its own title, description, tags, canonical, and JSON-LD. `public/sitemap.xml` and `robots.txt` point crawlers at [vixl.xyz](https://vixl.xyz). Gallery tiles keep those hrefs so Google can walk the catalog. Like, share, and comments live on the frame page.
+
 ## License
 
 Private studio catalog. All rights reserved.

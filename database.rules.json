@@ -12,6 +12,15 @@
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
         }
       }
+    },
+    "comments": {
+      "$workId": {
+        ".read": true,
+        "$cid": {
+          ".write": "!data.exists() || (auth != null && auth.token.email == 'help@wildsaura.com')",
+          ".validate": "newData.hasChildren(['name', 'body', 'createdAt']) && newData.child('name').isString() && newData.child('name').val().length >= 2 && newData.child('name').val().length <= 40 && newData.child('body').isString() && newData.child('body').val().length >= 2 && newData.child('body').val().length <= 500 && newData.child('createdAt').isNumber()"
+        }
+      }
     }
   }
 }

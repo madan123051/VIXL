@@ -15,6 +15,7 @@ export type Work = {
   camera: string;
   lens: string;
   description: string;
+  tags: string[];
 };
 
 export type StudioPillar = { k: string; t: string; d: string };
@@ -59,6 +60,9 @@ function asWork(value: unknown): Work | null {
     camera: typeof item.camera === "string" ? item.camera : "",
     lens: typeof item.lens === "string" ? item.lens : "",
     description: typeof item.description === "string" ? item.description : "",
+    tags: Array.isArray(item.tags)
+      ? item.tags.filter((tag): tag is string => typeof tag === "string" && tag.trim().length > 0)
+      : [],
   };
 }
 

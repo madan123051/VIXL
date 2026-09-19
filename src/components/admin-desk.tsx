@@ -43,6 +43,7 @@ function blankWork(): Work {
     camera: "",
     lens: "",
     description: "",
+    tags: [],
   };
 }
 
@@ -457,6 +458,21 @@ export function AdminDesk({ email }: { email: string }) {
                         value={selected.description}
                         onChange={(e) =>
                           patchWork(selected.id, { description: e.target.value })
+                        }
+                      />
+                    </Field>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Field label="Tags (comma separated)">
+                      <Input
+                        value={selected.tags.join(", ")}
+                        onChange={(e) =>
+                          patchWork(selected.id, {
+                            tags: e.target.value
+                              .split(",")
+                              .map((tag) => tag.trim())
+                              .filter(Boolean),
+                          })
                         }
                       />
                     </Field>

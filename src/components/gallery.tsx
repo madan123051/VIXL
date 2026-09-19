@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { KIND_LABEL, FILTERS, type FilterId, type Work } from "@/lib/media";
 import { useCatalog } from "@/lib/use-catalog";
 import { CinematicMedia } from "@/components/cinematic-media";
@@ -57,11 +58,16 @@ export function Gallery() {
 
       <div className="vixl-gallery">
         {works.map((work, index) => (
-          <button
+          <Link
             key={work.id}
-            type="button"
+            to="/work/$id"
+            params={{ id: work.id }}
             className="vixl-tile group relative w-full overflow-hidden rounded-xs bg-surface text-left"
-            onClick={() => setOpenId(work.id)}
+            onClick={(event) => {
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              event.preventDefault();
+              setOpenId(work.id);
+            }}
             aria-label={`${work.title}, ${KIND_LABEL[work.kind]}`}
           >
             <CinematicMedia
@@ -77,7 +83,7 @@ export function Gallery() {
                 {KIND_LABEL[work.kind]}
               </p>
             </div>
-          </button>
+          </Link>
         ))}
       </div>
 

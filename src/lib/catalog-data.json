@@ -3,15 +3,15 @@
   "site": {
     "kicker": "Visual Excellence Lab",
     "headline": "The Art of Sight.\nThe Science of Intelligence.",
-    "lede": "Still, aerial, and moving image — observed, then understood. A quiet instrument for pictures that remember how light behaved.",
+    "lede": "Still, aerial, and moving image \u2014 observed, then understood. A quiet instrument for pictures that remember how light behaved.",
     "title": "VIXL",
-    "description": "VIXL — Visual Excellence Lab. Still, aerial, and moving image. Observed, then understood."
+    "description": "VIXL \u2014 Visual Excellence Lab. Still, aerial, and moving image. Observed, then understood."
   },
   "studio": {
     "kicker": "Studio",
     "headline": "Pictures first.\nIntelligence after.",
     "paragraphs": [
-      "VIXL is a small studio for still, aerial, and moving image. We make pictures that remember how light behaved — then we ask a model to read them. Not to replace the eye. To give the frame a second, slower look.",
+      "VIXL is a small studio for still, aerial, and moving image. We make pictures that remember how light behaved \u2014 then we ask a model to read them. Not to replace the eye. To give the frame a second, slower look.",
       "The interface is meant to disappear. Black field, tight type, the work in the clear. Camera notes stay in the catalog; the lab writes a cinematic title and a search line only when you ask."
     ],
     "pillars": [
@@ -31,7 +31,7 @@
         "d": "Muted loops. Almost still. The horizon as a temperature."
       }
     ],
-    "colophon": "Tokyo · Visual Excellence Lab"
+    "colophon": "Tokyo \u00b7 Visual Excellence Lab"
   },
   "order": [
     "threshold-of-light",
@@ -60,7 +60,16 @@
       "location": "Faroe Islands",
       "camera": "DJI Inspire 3",
       "lens": "Zenmuse X9-8K",
-      "description": "Basalt falling into the North Atlantic at the last usable hour. The water holds a colder green than the sky will admit."
+      "description": "Basalt falling into the North Atlantic at the last usable hour. The water holds a colder green than the sky will admit.",
+      "tags": [
+        "aerial photography",
+        "Faroe Islands",
+        "basalt cliffs",
+        "drone",
+        "North Atlantic",
+        "dawn light",
+        "coastal landscape"
+      ]
     },
     "coast-drifting": {
       "id": "coast-drifting",
@@ -74,7 +83,16 @@
       "location": "Faroe Islands",
       "camera": "DJI Inspire 3",
       "lens": "Zenmuse X9-8K",
-      "description": "A single push over the cliff line at dawn. Almost still. The horizon is a temperature, not a line."
+      "description": "A single push over the cliff line at dawn. Almost still. The horizon is a temperature, not a line.",
+      "tags": [
+        "cinematic video",
+        "Faroe Islands",
+        "drone film",
+        "coastline",
+        "mist",
+        "slow cinema",
+        "aerial motion"
+      ]
     },
     "the-last-rehearsal": {
       "id": "the-last-rehearsal",
@@ -87,7 +105,15 @@
       "location": "Studio",
       "camera": "Leica M11",
       "lens": "Summilux-M 50mm f/1.4",
-      "description": "One tungsten source. A body and a length of silk in the same second. The face is not the subject; the light is."
+      "description": "One tungsten source. A body and a length of silk in the same second. The face is not the subject; the light is.",
+      "tags": [
+        "studio portrait",
+        "dance photography",
+        "tungsten light",
+        "Leica M11",
+        "silk",
+        "figure study"
+      ]
     },
     "after-the-rain": {
       "id": "after-the-rain",
@@ -100,7 +126,15 @@
       "location": "Porto",
       "camera": "Canon EOS R5",
       "lens": "RF 50mm f/1.2L",
-      "description": "An emptied boulevard writing the city back onto itself. Sodium, a red sign, and the wet as a second street."
+      "description": "An emptied boulevard writing the city back onto itself. Sodium, a red sign, and the wet as a second street.",
+      "tags": [
+        "Porto",
+        "street photography",
+        "night rain",
+        "wet pavement",
+        "urban still",
+        "Canon EOS R5"
+      ]
     },
     "geometry-of-wind": {
       "id": "geometry-of-wind",
@@ -113,7 +147,15 @@
       "location": "Namib Desert",
       "camera": "Hasselblad X2D",
       "lens": "XCD 45mm f/3.5",
-      "description": "Ridges drawn overnight. From the air the desert is a drafting table — ochre, rust, and a blue that only exists in shadow."
+      "description": "Ridges drawn overnight. From the air the desert is a drafting table \u2014 ochre, rust, and a blue that only exists in shadow.",
+      "tags": [
+        "Namib Desert",
+        "dune aerial",
+        "Hasselblad",
+        "landscape geometry",
+        "drone",
+        "ochre sand"
+      ]
     },
     "one-window": {
       "id": "one-window",
@@ -126,7 +168,15 @@
       "location": "Rotterdam",
       "camera": "Phase One XF IQ4",
       "lens": "Schneider 80mm LS",
-      "description": "Blue hour on poured concrete. A single occupied room. The plaza is a mirror the building has not asked for."
+      "description": "Blue hour on poured concrete. A single occupied room. The plaza is a mirror the building has not asked for.",
+      "tags": [
+        "Rotterdam",
+        "architecture",
+        "blue hour",
+        "concrete",
+        "Phase One",
+        "urban night"
+      ]
     },
     "first-weather": {
       "id": "first-weather",
@@ -139,7 +189,14 @@
       "location": "Yakushima",
       "camera": "Nikon Z8",
       "lens": "Nikkor Z 35mm f/1.8",
-      "description": "Fog thick enough to be a material. Light finds the trunks the way a hand finds a banister in the dark."
+      "description": "Fog thick enough to be a material. Light finds the trunks the way a hand finds a banister in the dark.",
+      "tags": [
+        "Yakushima",
+        "forest fog",
+        "Japan landscape",
+        "Nikon Z8",
+        "primeval woods"
+      ]
     },
     "the-witness": {
       "id": "the-witness",
@@ -152,7 +209,15 @@
       "location": "Osaka",
       "camera": "ARRI Alexa Mini LF",
       "lens": "Signature Prime 35mm",
-      "description": "A figure at glass, face withheld. The city arrives as color, not architecture. Interior as exposure, not room."
+      "description": "A figure at glass, face withheld. The city arrives as color, not architecture. Interior as exposure, not room.",
+      "tags": [
+        "Osaka",
+        "cinematic still",
+        "city night",
+        "ARRI",
+        "interior glass",
+        "color study"
+      ]
     },
     "alpenglow": {
       "id": "alpenglow",
@@ -165,7 +230,15 @@
       "location": "Hakuba",
       "camera": "Fujifilm GFX 100 II",
       "lens": "GF 45mm f/2.8",
-      "description": "First light on a winter ridge. The peak takes the sun; the valley keeps the night a little longer."
+      "description": "First light on a winter ridge. The peak takes the sun; the valley keeps the night a little longer.",
+      "tags": [
+        "Hakuba",
+        "alpenglow",
+        "mountain photography",
+        "Fujifilm GFX",
+        "first light",
+        "winter ridge"
+      ]
     },
     "lantern-hour": {
       "id": "lantern-hour",
@@ -178,7 +251,15 @@
       "location": "Tokyo",
       "camera": "Leica Q3",
       "lens": "Summilux 28mm f/1.7",
-      "description": "A backstreet after rain. Paper light, black water, steam. The alley is empty on purpose."
+      "description": "A backstreet after rain. Paper light, black water, steam. The alley is empty on purpose.",
+      "tags": [
+        "Tokyo",
+        "street night",
+        "lanterns",
+        "Leica Q3",
+        "rain alley",
+        "Japan"
+      ]
     },
     "caustic": {
       "id": "caustic",
@@ -191,7 +272,15 @@
       "location": "Studio",
       "camera": "Phase One XF IQ4",
       "lens": "Schneider 120mm LS Macro",
-      "description": "Cut glass and a single beam. The subject is not the vessel — it is the light that has to go through it."
+      "description": "Cut glass and a single beam. The subject is not the vessel \u2014 it is the light that has to go through it.",
+      "tags": [
+        "studio still life",
+        "caustics",
+        "cut glass",
+        "macro",
+        "Phase One",
+        "light study"
+      ]
     },
     "undertow": {
       "id": "undertow",
@@ -204,7 +293,14 @@
       "location": "Izu",
       "camera": "RED V-Raptor",
       "lens": "Prime 24mm, Nauticam housing",
-      "description": "From below the break. The surface is a ceiling of white fire; everything under it is a held breath."
+      "description": "From below the break. The surface is a ceiling of white fire; everything under it is a held breath.",
+      "tags": [
+        "Izu",
+        "underwater",
+        "ocean swell",
+        "RED V-Raptor",
+        "below the break"
+      ]
     },
     "night-glass": {
       "id": "night-glass",
@@ -218,7 +314,15 @@
       "location": "Tokyo",
       "camera": "Sony Venice 2",
       "lens": "Cooke S4/i 75mm",
-      "description": "Rain rehearsing on a dark pane. The city stays out of focus, which is how a city should behave at this hour."
+      "description": "Rain rehearsing on a dark pane. The city stays out of focus, which is how a city should behave at this hour.",
+      "tags": [
+        "Tokyo",
+        "rain on glass",
+        "cinematic loop",
+        "Sony Venice",
+        "bokeh night",
+        "motion"
+      ]
     }
   }
 }

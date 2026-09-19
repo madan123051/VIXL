@@ -6,8 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { KIND_LABEL } from "@/lib/media";
 import { useCatalog } from "@/lib/use-catalog";
 import { cn } from "@/lib/utils";
+import { staticHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/lab")({ component: Lab });
+export const Route = createFileRoute("/lab")({
+  component: Lab,
+  head: () =>
+    staticHead({
+      title: "Lab",
+      description:
+        "VIXL Lab — a second exposure. Choose a frame and the model writes a cinematic title, search line, and inferred EXIF.",
+      path: "/lab",
+      keywords: "VIXL lab, AI photography, cinematic tagging, visual intelligence",
+    }),
+});
 
 function Lab() {
   const { works } = useCatalog();
