@@ -36,14 +36,14 @@ export function Lightbox({ work, onClose, onPrev, onNext }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="flex h-[94svh] w-[min(98vw,1540px)] max-h-[94svh] flex-col gap-0 overflow-hidden bg-bg p-2 lg:flex-row">
+      <DialogContent className="inset-0 top-0 left-0 flex h-dvh max-h-dvh w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-y-auto overscroll-contain rounded-none bg-bg p-0 lg:inset-auto lg:top-1/2 lg:left-1/2 lg:h-[94svh] lg:max-h-[94svh] lg:w-[min(98vw,1540px)] lg:translate-x-[-50%] lg:translate-y-[-50%] lg:flex-row lg:overflow-hidden lg:rounded-xl lg:p-2">
         {work ? (
           <>
-            <div className="relative flex min-h-[42svh] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-md bg-bg-elevated lg:min-h-0">
+            <div className="relative flex min-h-[42svh] min-w-0 flex-none items-center justify-center overflow-hidden bg-bg-elevated lg:h-full lg:flex-1 lg:rounded-md">
               <CinematicMedia
                 work={work}
                 priority
-                className="h-full w-full object-contain"
+                className="max-h-[52svh] w-full object-contain lg:max-h-none lg:h-full"
               />
               <button
                 type="button"
@@ -62,7 +62,7 @@ export function Lightbox({ work, onClose, onPrev, onNext }: Props) {
                 <ChevronRight className="size-5" strokeWidth={1.5} />
               </button>
             </div>
-            <div className="flex w-full shrink-0 flex-col gap-5 overflow-y-auto px-3 py-4 lg:w-80 lg:px-4">
+            <div className="flex w-full shrink-0 flex-col gap-5 px-4 py-5 pb-10 lg:h-full lg:w-80 lg:overflow-y-auto lg:px-4 lg:py-4">
               <div>
                 <p className="text-xs tracking-widest text-muted uppercase">
                   {KIND_LABEL[work.kind]} · {work.year}

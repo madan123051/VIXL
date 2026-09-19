@@ -65,6 +65,8 @@ export function Gallery() {
             className="vixl-tile group relative w-full overflow-hidden rounded-xs bg-surface text-left"
             onClick={(event) => {
               if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+              const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+              if (!fine) return;
               event.preventDefault();
               setOpenId(work.id);
             }}

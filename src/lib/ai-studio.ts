@@ -49,52 +49,82 @@ function sizeFor(kind: MediaKind): { width: number; height: number } {
   return { width: 1728, height: 1152 };
 }
 
+async function readError(res: Response): Promise<string> {
+  try {
+    const body = (await res.json()) as {
+      error?: { message?: string } | string;
+      message?: string;
+    };
+    const msg =
+      (typeof body.error === "string" ? body.error : body.error?.message) ||
+      body.message;
+    if (msg) return msg;
+  } catch {
+    /* ignore */
+  }
+  return `Image generation failed (${res.status}).`;
+}
+
 async function xaiImage(prompt: string, kind: MediaKind): Promise<ImageOk | Fail> {
   const apiKey = requireKey();
   if (typeof apiKey !== "string") return apiKey;
   const { width, height } = sizeFor(kind);
-  try {
-    const res = await fetch("https://api.x.ai/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      signal: AbortSignal.timeout(90000),
-      body: JSON.stringify({
-        model: "grok-imagine-image-2.0",
-        prompt: `${prompt.trim()}. ${STYLE}`,
-        n: 1,
-        resolution: "1K",
-        aspect_ratio: aspectFor(kind),
-      }),
-    });
-    if (!res.ok) {
-      return { ok: false, error: `Image generation failed (${res.status}).` };
+  const models = ["grok-imagine-image-2.0", "grok-imagine-image-quality", "grok-imagine-image"];
+  let lastError = "Image generation failed.";
+
+  for (const model of models) {
+    try {
+      const res = await fetch("https://api.x.ai/v1/images/generations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        signal: AbortSignal.timeout(90000),
+        body: JSON.stringify({
+          model,
+          prompt: `${prompt.trim()}. ${STYLE}`,
+          n: 1,
+          resolution: "1k",
+          aspect_ratio: aspectFor(kind),
+        }),
+      });
+      if (!res.ok) {
+        lastError = await readError(res);
+        continue;
+      }
+      const body = (await res.json()) as {
+        data?: { url?: string; b64_json?: string; base64?: string }[];
+      };
+      const item = body.data?.[0];
+      if (!item) {
+        lastError = "No image returned.";
+        continue;
+      }
+      const raw = item.b64_json || item.base64;
+      if (raw) {
+        return { ok: true, mime: "image/jpeg", base64: raw, width, height };
+      }
+      if (!item.url) {
+        lastError = "No image URL returned.";
+        continue;
+      }
+      const bin = await fetch(item.url, { signal: AbortSignal.timeout(30000) });
+      if (!bin.ok) {
+        lastError = "Could not download the generated still.";
+        continue;
+      }
+      const bytes = Buffer.from(await bin.arrayBuffer());
+      return { ok: true, mime: "image/jpeg", base64: bytes.toString("base64"), width, height };
+    } catch (error) {
+      const aborted =
+        error instanceof Error &&
+        (error.name === "TimeoutError" || error.name === "AbortError");
+      lastError = aborted ? "Generation took too long." : "Could not reach Imagine.";
     }
-    const body = (await res.json()) as {
-      data?: { url?: string; b64_json?: string; base64?: string }[];
-    };
-    const item = body.data?.[0];
-    if (!item) return { ok: false, error: "No image returned." };
-    const raw = item.b64_json || item.base64;
-    if (raw) {
-      return { ok: true, mime: "image/jpeg", base64: raw, width, height };
-    }
-    if (!item.url) return { ok: false, error: "No image URL returned." };
-    const bin = await fetch(item.url, { signal: AbortSignal.timeout(30000) });
-    if (!bin.ok) return { ok: false, error: "Could not download the generated still." };
-    const bytes = Buffer.from(await bin.arrayBuffer());
-    return { ok: true, mime: "image/jpeg", base64: bytes.toString("base64"), width, height };
-  } catch (error) {
-    const aborted =
-      error instanceof Error &&
-      (error.name === "TimeoutError" || error.name === "AbortError");
-    return {
-      ok: false,
-      error: aborted ? "Generation took too long." : "Could not reach Imagine.",
-    };
   }
+
+  return { ok: false, error: lastError };
 }
 
 export const generateStill = createServerFn({ method: "POST" })
