@@ -1,0 +1,23 @@
+# deps & build
+node_modules
+.output
+.vercel
+.nitro
+.tanstack
+.vinxi
+dist
+*.local
+
+# env (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Grok App Builder workspace files (not required on Vercel)
+AGENTS.md
+startup.sh

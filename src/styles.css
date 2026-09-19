@@ -1,0 +1,211 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-bg: #000000;
+  --color-bg-elevated: #0a0a0b;
+  --color-surface: #121214;
+  --color-fg: #f4f4f1;
+  --color-muted: #8c8c88;
+  --color-subtle: #5a5a56;
+  --color-border: #ffffff14;
+  --color-accent: #d4cfc8;
+  --color-ai: #8b7aa3;
+  --color-ai-dim: #5c5270;
+  --color-danger: #c45c5c;
+
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.08);
+  --shadow-border-hover: 0 0 0 1px rgb(255 255 255 / 0.14);
+  --shadow-ai: 0 0 0 1px rgb(139 122 163 / 0.35), 0 12px 40px rgb(139 122 163 / 0.12);
+
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    min-height: 100svh;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--color-ai);
+    color: var(--color-fg);
+  }
+
+  img,
+  video {
+    outline: 1px solid color-mix(in oklab, var(--color-fg) 10%, transparent);
+    outline-offset: -1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Masonry: hovered tile holds, siblings recede. Media scales inside a clip. */
+.vixl-gallery {
+  column-count: 1;
+  column-gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .vixl-gallery {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1100px) {
+  .vixl-gallery {
+    column-count: 3;
+  }
+}
+
+.vixl-tile {
+  break-inside: avoid;
+  margin-bottom: 0.75rem;
+}
+
+.vixl-media {
+  width: 100%;
+  height: auto;
+  display: block;
+  transform: scale(1);
+  transform-origin: center;
+  transition-property: transform;
+  transition-duration: 700ms;
+  transition-timing-function: var(--ease-smooth-out);
+  will-change: transform;
+}
+
+.vixl-tile {
+  opacity: 1;
+  transition-property: opacity;
+  transition-duration: 250ms;
+  transition-timing-function: var(--ease-out);
+}
+
+.vixl-caption {
+  opacity: 1;
+  transition-property: opacity, transform;
+  transition-duration: 250ms;
+  transition-timing-function: var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .vixl-caption {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  .vixl-gallery:hover .vixl-tile {
+    opacity: 0.38;
+  }
+
+  .vixl-gallery:hover .vixl-tile:hover,
+  .vixl-gallery:hover .vixl-tile:focus-visible {
+    opacity: 1;
+  }
+
+  .vixl-tile:hover .vixl-media,
+  .vixl-tile:focus-visible .vixl-media {
+    transform: scale(1.05);
+  }
+
+  .vixl-tile:hover .vixl-caption,
+  .vixl-tile:focus-visible .vixl-caption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vixl-media,
+  .vixl-tile,
+  .vixl-caption,
+  .hero-media {
+    transition: none;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+.hero-media {
+  animation: kenburns 28s var(--ease-out) forwards;
+  will-change: transform;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.vixl-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--color-fg) 10%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vixl-shimmer {
+    animation: none;
+  }
+}
