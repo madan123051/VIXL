@@ -16,6 +16,7 @@
  */
 import installPageTemplate from "../../scripts/install-page.html?raw";
 import { grokOgIdentity } from "virtual:grok-og-identity";
+import { renderSitemapXml } from "../../scripts/render-sitemap.mjs";
 import {
   acceptsHtml,
   createHeadInjector,
@@ -24,6 +25,14 @@ import {
   renderInstallPageHtml,
   renderWebManifest,
 } from "../../scripts/grok-pwa-shared.mjs";
+
+const SITEMAP_FALLBACK = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://vixl.xyz/</loc></url>
+  <url><loc>https://vixl.xyz/about</loc></url>
+  <url><loc>https://vixl.xyz/lab</loc></url>
+</urlset>
+`;
 
 interface GrokPwaEvent {
   url: URL;
@@ -65,9 +74,26 @@ export default async function grokPwaMiddleware(
   next: () => unknown | Promise<unknown>,
 ): Promise<unknown> {
   const method = (event.req.method ?? "GET").toUpperCase();
-  if (method !== "GET") return next();
-
   const path = event.url.pathname;
+
+  if (path === "/sitemap.xml" && (method === "GET" || method === "HEAD")) {
+    let xml = SITEMAP_FALLBACK;
+    try {
+      xml = await renderSitemapXml();
+    } catch {
+      xml = SITEMAP_FALLBACK;
+    }
+    return new Response(method === "HEAD" ? null : xml, {
+      status: 200,
+      headers: {
+        "content-type": "text/xml; charset=utf-8",
+        "cache-control": "public, max-age=300",
+        "x-content-type-options": "nosniff",
+      },
+    });
+  }
+
+  if (method !== "GET") return next();
   const urlWithQuery = path + event.url.search;
 
   if (path === "/__grok/manifest.webmanifest" || path === "/__grok/manifest.json") {
