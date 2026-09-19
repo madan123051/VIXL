@@ -4,12 +4,14 @@ import {
   adjacentIds,
   getWork,
   parseCatalog,
+  publishedWorks,
   type Catalog,
   type Work,
 } from "@/lib/media";
 import { ensureFirebaseAuth, getFirebaseDatabase } from "@/lib/firebase";
 
-export function useCatalog() {
+export function useCatalog(opts?: { includeDrafts?: boolean }) {
+  const includeDrafts = opts?.includeDrafts === true;
   const [catalog, setCatalog] = useState<Catalog>(SEED_CATALOG);
   const [source, setSource] = useState<"seed" | "firebase">("seed");
 
@@ -43,16 +45,18 @@ export function useCatalog() {
   }, []);
 
   return useMemo(() => {
-    const hero =
-      catalog.works.find((work) => work.id === catalog.heroId) ?? catalog.works[0];
+    const works = includeDrafts ? catalog.works : publishedWorks(catalog.works);
+    const hero = works.find((work) => work.id === catalog.heroId) ?? works[0];
     return {
       ...catalog,
+      works,
+      allWorks: catalog.works,
       hero,
       source,
-      getWork: (id: string) => getWork(id, catalog.works),
-      adjacentIds: (id: string) => adjacentIds(id, catalog.works),
+      getWork: (id: string) => getWork(id, works),
+      adjacentIds: (id: string) => adjacentIds(id, works),
     };
-  }, [catalog, source]);
+  }, [catalog, source, includeDrafts]);
 }
 
 export type LiveCatalog = ReturnType<typeof useCatalog>;

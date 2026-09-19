@@ -16,6 +16,7 @@ export type Work = {
   lens: string;
   description: string;
   tags: string[];
+  published: boolean;
 };
 
 export type StudioPillar = { k: string; t: string; d: string };
@@ -64,6 +65,7 @@ function asWork(value: unknown): Work | null {
     tags: Array.isArray(item.tags)
       ? item.tags.filter((tag): tag is string => typeof tag === "string" && tag.trim().length > 0)
       : [],
+    published: item.published !== false,
   };
 }
 
@@ -174,6 +176,10 @@ export const FILTERS = [
 ] as const;
 
 export type FilterId = (typeof FILTERS)[number]["id"];
+
+export function publishedWorks(works: Work[]): Work[] {
+  return works.filter((work) => work.published !== false);
+}
 
 export function getWork(id: string, list: Work[] = WORKS): Work | undefined {
   return list.find((work) => work.id === id);

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowDown,
@@ -9,7 +9,14 @@ import {
   Upload,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AdminCreate } from "@/components/admin-create";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { VixlWordmark } from "@/components/vixl-mark";
 import {
@@ -28,7 +35,7 @@ import {
 import { useCatalog } from "@/lib/use-catalog";
 import { cn } from "@/lib/utils";
 
-const TABS = ["Frames", "Studio", "Site", "Marks"] as const;
+const TABS = ["Create", "Frames", "Studio", "Site", "Marks"] as const;
 type Tab = (typeof TABS)[number];
 
 function blankWork(): Work {
@@ -45,6 +52,7 @@ function blankWork(): Work {
     lens: "",
     description: "",
     tags: [],
+    published: false,
   };
 }
 
@@ -64,23 +72,25 @@ function firebaseError(error: unknown): string {
 }
 
 export function AdminDesk({ email }: { email: string }) {
-  const live = useCatalog();
+  const live = useCatalog({ includeDrafts: true });
   const [catalog, setCatalog] = useState<Catalog>(live);
-  const [tab, setTab] = useState<Tab>("Frames");
+  const [tab, setTab] = useState<Tab>("Create");
   const [selectedId, setSelectedId] = useState<string | null>(live.works[0]?.id ?? null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"src" | "poster" | null>(null);
   const [marks, setMarks] = useState<Record<string, number>>({});
-  const saveTimer = useRef<number | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (dirty) return;
     setCatalog({
       heroId: live.heroId,
       site: live.site,
       studio: live.studio,
       works: live.works,
     });
-  }, [live.heroId, live.site, live.studio, live.works]);
+  }, [live.heroId, live.site, live.studio, live.works, dirty]);
 
   useEffect(() => {
     if (!selectedId && live.works[0]) setSelectedId(live.works[0].id);
@@ -108,46 +118,47 @@ export function AdminDesk({ email }: { email: string }) {
 
   const selected = catalog.works.find((w) => w.id === selectedId) ?? null;
 
-  async function persist(next: Catalog, silent = false) {
+  function updateLocal(next: Catalog) {
     setCatalog(next);
-    if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    const wait = silent ? 500 : 0;
-    saveTimer.current = window.setTimeout(() => {
-      void (async () => {
-        setSaving(true);
-        try {
-          await saveCatalog(next);
-          if (!silent) toast.success("Catalog saved");
-        } catch (error) {
-          toast.error(firebaseError(error));
-        } finally {
-          setSaving(false);
-        }
-      })();
-    }, wait);
+    setDirty(true);
+  }
+
+  async function persistNow(next: Catalog, message: string) {
+    setSaving(true);
+    try {
+      await saveCatalog(next);
+      setCatalog(next);
+      setDirty(false);
+      toast.success(message);
+    } catch (error) {
+      toast.error(firebaseError(error));
+    } finally {
+      setSaving(false);
+    }
   }
 
   function patchWork(id: string, patch: Partial<Work>) {
     const works = catalog.works.map((work) =>
       work.id === id ? { ...work, ...patch } : work,
     );
-    void persist({ ...catalog, works }, true);
+    updateLocal({ ...catalog, works });
   }
 
   function addFrame() {
     const work = blankWork();
-    const next = { ...catalog, works: [work, ...catalog.works] };
+    updateLocal({ ...catalog, works: [work, ...catalog.works] });
     setSelectedId(work.id);
     setTab("Frames");
-    void persist(next);
   }
 
   function removeFrame(id: string) {
-    if (!confirm("Remove this frame from the catalog?")) return;
     const works = catalog.works.filter((work) => work.id !== id);
-    const heroId = catalog.heroId === id ? (works[0]?.id ?? "") : catalog.heroId;
+    const published = works.filter((work) => work.published);
+    const heroId =
+      catalog.heroId === id ? (published[0]?.id ?? works[0]?.id ?? "") : catalog.heroId;
     if (selectedId === id) setSelectedId(works[0]?.id ?? null);
-    void persist({ ...catalog, works, heroId });
+    setDeleteId(null);
+    void persistNow({ ...catalog, works, heroId }, "Frame removed");
   }
 
   function moveFrame(id: string, dir: -1 | 1) {
@@ -158,7 +169,7 @@ export function AdminDesk({ email }: { email: string }) {
     const [row] = works.splice(index, 1);
     if (!row) return;
     works.splice(nextIndex, 0, row);
-    void persist({ ...catalog, works }, true);
+    updateLocal({ ...catalog, works });
   }
 
   async function onUpload(kind: "src" | "poster", file: File | undefined) {
@@ -169,7 +180,7 @@ export function AdminDesk({ email }: { email: string }) {
       const patch: Partial<Work> = kind === "src" ? { src: url } : { poster: url };
       if (kind === "src" && file.type.startsWith("video/")) patch.kind = "video";
       patchWork(selected.id, patch);
-      toast.success(kind === "src" ? "Frame uploaded" : "Poster uploaded");
+      toast.success(kind === "src" ? "File attached" : "Poster attached");
     } catch (error) {
       toast.error(firebaseError(error));
     } finally {
@@ -177,9 +188,22 @@ export function AdminDesk({ email }: { email: string }) {
     }
   }
 
+  function setPublished(id: string, published: boolean) {
+    const works = catalog.works.map((work) =>
+      work.id === id ? { ...work, published } : work,
+    );
+    void persistNow(
+      { ...catalog, works },
+      published ? "Published to the site" : "Moved back to draft",
+    );
+  }
+
   async function publishSeed() {
-    await persist(SEED_CATALOG);
-    toast.success("Seed catalog pushed");
+    const seeded: Catalog = {
+      ...SEED_CATALOG,
+      works: SEED_CATALOG.works.map((work) => ({ ...work, published: true })),
+    };
+    await persistNow(seeded, "Seed catalog pushed as live");
   }
 
   const markRows = useMemo(
@@ -202,8 +226,15 @@ export function AdminDesk({ email }: { email: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <span className="max-w-[14rem] truncate text-xs text-muted">{email}</span>
             <span className="font-mono text-xs text-subtle">
-              {saving ? "Saving" : live.source === "firebase" ? "Live" : "Local seed"}
+              {saving ? "Saving" : dirty ? "Unsaved" : "Saved"}
             </span>
+            <Button
+              size="sm"
+              disabled={saving || !dirty}
+              onClick={() => void persistNow(catalog, "Saved")}
+            >
+              Save
+            </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to="/">Site</Link>
             </Button>
@@ -230,6 +261,17 @@ export function AdminDesk({ email }: { email: string }) {
       </header>
 
       <div className="mx-auto max-w-[1400px] px-4 py-8 md:px-6">
+        {tab === "Create" ? (
+          <AdminCreate
+            onCreated={(work) => {
+              const next = { ...catalog, works: [work, ...catalog.works] };
+              setSelectedId(work.id);
+              setTab("Frames");
+              void persistNow(next, "Draft ready. Publish when you want it on the site.");
+            }}
+          />
+        ) : null}
+
         {tab === "Frames" ? (
           <div className="grid gap-8 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
             <aside>
@@ -271,6 +313,7 @@ export function AdminDesk({ email }: { email: string }) {
                           <span className="block truncate text-sm text-fg">{work.title}</span>
                           <span className="text-xs tracking-[0.12em] text-muted uppercase">
                             {KIND_LABEL[work.kind]}
+                            {work.published ? " · Live" : " · Draft"}
                             {work.id === catalog.heroId ? " · Hero" : ""}
                           </span>
                         </span>
@@ -301,6 +344,11 @@ export function AdminDesk({ email }: { email: string }) {
 
             {selected ? (
               <section className="flex flex-col gap-5">
+                <p className="text-sm text-muted">
+                  {selected.published
+                    ? "Live on the site. Save edits, or unpublish to hide it."
+                    : "Draft — visitors cannot see this until you publish."}
+                </p>
                 <div className="overflow-hidden rounded-lg bg-surface">
                   {selected.src ? (
                     selected.kind === "video" ? (
@@ -348,9 +396,17 @@ export function AdminDesk({ email }: { email: string }) {
                     />
                   </label>
                   <Button
+                    variant={selected.published ? "default" : "ai"}
+                    size="sm"
+                    disabled={saving || !selected.src}
+                    onClick={() => setPublished(selected.id, !selected.published)}
+                  >
+                    {selected.published ? "Unpublish" : "Publish to site"}
+                  </Button>
+                  <Button
                     variant={selected.id === catalog.heroId ? "default" : "outline"}
                     size="sm"
-                    onClick={() => void persist({ ...catalog, heroId: selected.id })}
+                    onClick={() => updateLocal({ ...catalog, heroId: selected.id })}
                   >
                     <Star className="size-4" strokeWidth={1.5} />
                     Hero
@@ -358,7 +414,7 @@ export function AdminDesk({ email }: { email: string }) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => removeFrame(selected.id)}
+                    onClick={() => setDeleteId(selected.id)}
                   >
                     <Trash2 className="size-4" strokeWidth={1.5} />
                     Remove
@@ -491,7 +547,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Input
                 value={catalog.studio.kicker}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     studio: { ...catalog.studio, kicker: e.target.value },
                   })
@@ -502,7 +558,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Textarea
                 value={catalog.studio.headline}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     studio: { ...catalog.studio, headline: e.target.value },
                   })
@@ -514,7 +570,7 @@ export function AdminDesk({ email }: { email: string }) {
                 className="min-h-40"
                 value={catalog.studio.paragraphs.join("\n\n")}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     studio: {
                       ...catalog.studio,
@@ -536,7 +592,7 @@ export function AdminDesk({ email }: { email: string }) {
                       const pillars = catalog.studio.pillars.map((item, i) =>
                         i === index ? { ...item, t: e.target.value } : item,
                       );
-                      void persist({
+                      updateLocal({
                         ...catalog,
                         studio: { ...catalog.studio, pillars },
                       });
@@ -551,7 +607,7 @@ export function AdminDesk({ email }: { email: string }) {
                         const pillars = catalog.studio.pillars.map((item, i) =>
                           i === index ? { ...item, d: e.target.value } : item,
                         );
-                        void persist({
+                        updateLocal({
                           ...catalog,
                           studio: { ...catalog.studio, pillars },
                         });
@@ -565,7 +621,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Input
                 value={catalog.studio.colophon}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     studio: { ...catalog.studio, colophon: e.target.value },
                   })
@@ -581,7 +637,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Input
                 value={catalog.site.kicker}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     site: { ...catalog.site, kicker: e.target.value },
                   })
@@ -592,7 +648,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Input
                 value={catalog.site.subtitle}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     site: { ...catalog.site, subtitle: e.target.value },
                   })
@@ -603,7 +659,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Textarea
                 value={catalog.site.headline}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     site: { ...catalog.site, headline: e.target.value },
                   })
@@ -614,7 +670,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Textarea
                 value={catalog.site.lede}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     site: { ...catalog.site, lede: e.target.value },
                   })
@@ -625,7 +681,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Input
                 value={catalog.site.title}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     site: { ...catalog.site, title: e.target.value },
                   })
@@ -636,7 +692,7 @@ export function AdminDesk({ email }: { email: string }) {
               <Textarea
                 value={catalog.site.description}
                 onChange={(e) =>
-                  void persist({
+                  updateLocal({
                     ...catalog,
                     site: { ...catalog.site, description: e.target.value },
                   })
@@ -665,6 +721,27 @@ export function AdminDesk({ email }: { email: string }) {
           </section>
         ) : null}
       </div>
+
+      <Dialog open={Boolean(deleteId)} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <DialogContent className="w-[min(96vw,28rem)] p-6" showClose>
+          <DialogTitle>Remove this frame?</DialogTitle>
+          <DialogDescription className="mt-3">
+            {catalog.works.find((work) => work.id === deleteId)?.published
+              ? "It is live on the site. Removing it cannot be undone."
+              : "This draft will be deleted. This cannot be undone."}
+          </DialogDescription>
+          <div className="mt-6 flex gap-2">
+            <Button variant="outline" onClick={() => setDeleteId(null)}>
+              Keep
+            </Button>
+            <Button
+              onClick={() => deleteId && removeFrame(deleteId)}
+            >
+              Remove
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
