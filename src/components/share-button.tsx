@@ -1,17 +1,18 @@
 import { Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { workCanonical, workDescription, workTitle } from "@/lib/seo";
+import { workCanonical } from "@/lib/seo";
 import type { Work } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 export function ShareButton({ work, className }: { work: Work; className?: string }) {
   async function share() {
     const url = workCanonical(work.id);
-    const title = workTitle(work);
-    const text = workDescription(work);
+    const title = `${work.title} — VIXL`;
     try {
       if (typeof navigator.share === "function") {
-        await navigator.share({ title, text, url });
+        // Title + URL only. Long captions (f/1.4, ellipses) glue onto the
+        // link on WhatsApp/iOS and the result does not open.
+        await navigator.share({ title, url });
         return;
       }
     } catch (error) {
@@ -22,7 +23,7 @@ export function ShareButton({ work, className }: { work: Work; className?: strin
       toast.success("Link copied");
     } catch {
       window.open(
-        `https://x.com/intent/tweet?text=${encodeURIComponent(work.title)}&url=${encodeURIComponent(url)}`,
+        `https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
         "_blank",
         "noopener,noreferrer",
       );
