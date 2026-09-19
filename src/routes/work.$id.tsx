@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { CinematicMedia } from "@/components/cinematic-media";
 import { AiPanel } from "@/components/ai-panel";
+import { MarkButton } from "@/components/mark-button";
 import { Button } from "@/components/ui/button";
 import { KIND_LABEL, adjacentIds, getWork } from "@/lib/media";
 
@@ -57,6 +58,9 @@ function WorkRoom() {
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted">
             {work.description}
           </p>
+          <div className="mt-6">
+            <MarkButton workId={work.id} title={work.title} />
+          </div>
           <dl className="mt-8 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
             <div>
               <dt className="text-xs tracking-[0.14em] text-subtle uppercase">

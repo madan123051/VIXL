@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { CinematicMedia } from "@/components/cinematic-media";
 import { AiPanel } from "@/components/ai-panel";
+import { MarkButton } from "@/components/mark-button";
 import { KIND_LABEL, type Work } from "@/lib/media";
 
 type Props = {
@@ -89,6 +90,7 @@ export function Lightbox({ work, onClose, onPrev, onNext }: Props) {
                 </div>
               </dl>
               <AiPanel work={work} />
+              <MarkButton workId={work.id} title={work.title} />
               <Button variant="outline" size="sm" asChild>
                 <Link to="/work/$id" params={{ id: work.id }}>
                   Open viewing room

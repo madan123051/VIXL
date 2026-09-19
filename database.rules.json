@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "marks": {
+      "$workId": {
+        "count": {
+          ".read": true,
+          ".write": true,
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000"
+        }
+      }
+    }
+  }
+}

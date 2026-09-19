@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { FirebaseBoot } from "@/components/firebase-boot";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -55,6 +56,7 @@ function RootDocument() {
       </head>
       <body className="bg-bg text-fg">
         <PreviewHostBridge />
+        <FirebaseBoot />
         <AuthProvider>
           <TooltipProvider>
             <Navbar />
