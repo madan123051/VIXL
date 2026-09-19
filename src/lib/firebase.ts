@@ -161,11 +161,14 @@ export async function saveCatalog(catalog: Catalog): Promise<void> {
 export async function uploadGalleryFile(file: File, folder: string): Promise<string> {
   const storage = await getFirebaseStorage();
   if (!storage) throw new Error("Storage is not available. Enable it in Firebase Console.");
-  const safe = file.name.replace(/[^\w.\-]+/g, "-").toLowerCase();
+  const stamped = file.type.startsWith("image/")
+    ? await (await import("@/lib/watermark")).stampStill(file)
+    : file;
+  const safe = stamped.name.replace(/[^\w.\-]+/g, "-").toLowerCase();
   const path = `${folder}/${Date.now()}-${safe}`;
   const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
   const fileRef = ref(storage, path);
-  await uploadBytes(fileRef, file, { contentType: file.type || undefined });
+  await uploadBytes(fileRef, stamped, { contentType: stamped.type || undefined });
   return getDownloadURL(fileRef);
 }
 
