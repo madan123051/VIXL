@@ -17,7 +17,6 @@ import {
   renderWebManifest,
   snapshotOgIdentity,
 } from "./grok-pwa-shared.mjs";
-import { renderSitemapXml } from "./render-sitemap.mjs";
 
 export const GROK_OG_IDENTITY_ID = "virtual:grok-og-identity";
 
@@ -53,6 +52,20 @@ function serveGrokPwa(middlewares) {
       return;
     }
 
+    if (pathOnly === "/sitemap.xml") {
+      try {
+        const body = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../public/sitemap.xml"));
+        res.statusCode = 200;
+        res.setHeader("content-type", "text/xml; charset=utf-8");
+        res.setHeader("cache-control", "public, max-age=300");
+        res.setHeader("content-length", String(body.byteLength));
+        res.end(body);
+      } catch {
+        next();
+      }
+      return;
+    }
+
     if (pathOnly === "/__grok/manifest.webmanifest" || pathOnly === "/__grok/manifest.json") {
       const body = Buffer.from(renderWebManifest(requestHost(req)), "utf8");
       res.statusCode = 200;
@@ -60,20 +73,6 @@ function serveGrokPwa(middlewares) {
       res.setHeader("cache-control", "no-cache");
       res.setHeader("content-length", String(body.byteLength));
       res.end(body);
-      return;
-    }
-
-    if (pathOnly === "/sitemap.xml") {
-      void renderSitemapXml()
-        .then((xml) => {
-          const body = Buffer.from(xml, "utf8");
-          res.statusCode = 200;
-          res.setHeader("content-type", "application/xml; charset=utf-8");
-          res.setHeader("cache-control", "public, max-age=600");
-          res.setHeader("content-length", String(body.byteLength));
-          res.end(body);
-        })
-        .catch(() => next());
       return;
     }
 
