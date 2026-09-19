@@ -108,7 +108,7 @@ export function CinematicMedia({
           draggable={false}
         />
       )}
-      {isVideo ? <CopyrightBug /> : null}
+      {watch ? <CopyrightBug /> : null}
     </span>
   );
 }
