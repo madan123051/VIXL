@@ -28,6 +28,7 @@ export type Catalog = {
     lede: string;
     title: string;
     description: string;
+    subtitle: string;
   };
   studio: {
     kicker: string;
@@ -101,6 +102,8 @@ export function parseCatalog(raw: unknown): Catalog | null {
           ? siteIn.lede
           : "Still, aerial, and moving image — observed, then understood.",
       title: typeof siteIn.title === "string" ? siteIn.title : "VIXL",
+      subtitle:
+        typeof siteIn.subtitle === "string" ? siteIn.subtitle : "Visual Excellence Lab",
       description:
         typeof siteIn.description === "string"
           ? siteIn.description
@@ -139,6 +142,7 @@ export const SEED_CATALOG: Catalog = parseCatalog(seed) ?? {
     headline: "VIXL",
     lede: "",
     title: "VIXL",
+    subtitle: "Visual Excellence Lab",
     description: "",
   },
   studio: {

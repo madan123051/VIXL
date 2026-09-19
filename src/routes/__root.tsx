@@ -14,7 +14,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "VIXL";
+const APP_NAME = "Visual Excellence Lab";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -27,6 +27,7 @@ export const Route = createRootRoute({
         content:
           "VIXL — Visual Excellence Lab. Still, aerial, and moving image. Observed, then understood.",
       },
+      { name: "apple-mobile-web-app-title", content: APP_NAME },
       { name: "theme-color", content: "#000000" },
     ],
     links: [

@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
+import { VixlWordmark } from "@/components/vixl-mark";
 import {
   KIND_LABEL,
   SEED_CATALOG,
@@ -196,8 +197,7 @@ export function AdminDesk({ email }: { email: string }) {
       <header className="sticky top-0 z-40 border-b border-fg/8 bg-bg/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-3 px-4 py-3 md:px-6">
           <div>
-            <p className="text-xs tracking-[0.18em] text-muted uppercase">Desk</p>
-            <p className="font-display text-lg tracking-tight">VIXL</p>
+            <VixlWordmark compact />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="max-w-[14rem] truncate text-xs text-muted">{email}</span>

@@ -43,6 +43,13 @@ export function Hero() {
         >
           {site.kicker}
         </motion.p>
+        <motion.p
+          variants={rise}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="text-xs tracking-[0.18em] text-muted uppercase"
+        >
+          ({site.subtitle})
+        </motion.p>
         <motion.h1
           variants={rise}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}

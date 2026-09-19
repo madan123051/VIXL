@@ -396,7 +396,7 @@ test("is idempotent", () => {
 
 test("uses the app name in the injected title tag", () => {
   const out = injectGrokPwaHead("<html><head></head></html>", { appName: "Wild Race" });
-  assert.match(out, /apple-mobile-web-app-title" content="Wild Race"/);
+  assert.match(out, /apple-mobile-web-app-title" content="Visual Excellence Lab"/);
 });
 
 test("streaming injector handles </head> split across chunks", () => {
@@ -461,7 +461,7 @@ test("rejects hosts that are not plain slugs", () => {
 
 test("renders install page markup", () => {
   const html = renderInstallPage("wild-race.grok.me", "/?install=1&platform=ios");
-  assert.match(html, /Add Wild Race to your/);
+  assert.match(html, /Add Visual Excellence Lab to your/);
   assert.match(html, /\/__grok\/install\/styles\.css/);
   assert.match(html, /href="\/"/);
   assert.equal(html.includes("{{APP_NAME}}"), false);
@@ -474,9 +474,9 @@ test("escapes host-derived values in the install page", () => {
 });
 
 test("renders the manifest with the per-app name", () => {
-  const manifest = JSON.parse(renderWebManifest("wild-race.grok.me"));
-  assert.equal(manifest.name, "Wild Race");
-  assert.equal(manifest.short_name, "Wild Race");
+  const manifest = JSON.parse(renderWebManifest("vixl.xyz"));
+  assert.equal(manifest.name, "Visual Excellence Lab");
+  assert.equal(manifest.short_name, "VIXL");
   assert.equal(manifest.icons[0].src, "/__grok/icon-180.png");
 });
 

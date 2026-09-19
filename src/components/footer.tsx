@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Separator } from "@/components/ui/separator";
+import { VixlWordmark } from "@/components/vixl-mark";
 
 export function Footer() {
   return (
@@ -7,10 +8,8 @@ export function Footer() {
       <Separator />
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 pt-8 text-sm text-muted sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-display text-base tracking-tight text-fg">VIXL</p>
-          <p className="mt-1 text-xs tracking-[0.16em] uppercase">
-            Visual Excellence Lab · Tokyo
-          </p>
+          <VixlWordmark compact />
+          <p className="mt-3 text-xs tracking-[0.16em] uppercase">Tokyo</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs tracking-tight">
           <Link to="/" className="transition-colors duration-150 hover:text-fg">

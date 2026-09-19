@@ -153,16 +153,21 @@ export function stripInstallParams(url) {
 
 export function renderInstallPageHtml(template, { host, url } = {}) {
   return String(template)
-    .replaceAll("{{APP_NAME}}", escapeHtml(appNameFromHost(host)))
+    .replaceAll("{{APP_NAME}}", escapeHtml(displayAppName(host)))
     .replaceAll("{{APP_URL}}", escapeHtml(stripInstallParams(url)));
 }
 
+export function displayAppName(hostHeader, cwd = process.cwd()) {
+  const { site } = snapshotOgIdentity(cwd);
+  return resolveOgTitle(site, DEFAULT_APP_NAME, hostHeader);
+}
+
 export function renderWebManifest(hostHeader) {
-  const name = appNameFromHost(hostHeader);
+  const name = displayAppName(hostHeader);
   return JSON.stringify(
     {
       name,
-      short_name: name,
+      short_name: name.length > 12 ? "VIXL" : name,
       id: "/",
       start_url: "/",
       scope: "/",
