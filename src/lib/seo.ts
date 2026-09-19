@@ -110,6 +110,8 @@ export function workHead(work: Work) {
       { property: "og:url", content: url },
       { property: "og:type", content: "article" },
       { property: "og:image", content: image },
+      { property: "og:image:alt", content: work.title },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:site_name", content: SITE_NAME },
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: description },

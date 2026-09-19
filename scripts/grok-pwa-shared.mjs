@@ -153,21 +153,16 @@ export function stripInstallParams(url) {
 
 export function renderInstallPageHtml(template, { host, url } = {}) {
   return String(template)
-    .replaceAll("{{APP_NAME}}", escapeHtml(displayAppName(host)))
+    .replaceAll("{{APP_NAME}}", escapeHtml(appNameFromHost(host)))
     .replaceAll("{{APP_URL}}", escapeHtml(stripInstallParams(url)));
 }
 
-export function displayAppName(hostHeader, cwd = process.cwd()) {
-  const { site } = snapshotOgIdentity(cwd);
-  return resolveOgTitle(site, DEFAULT_APP_NAME, hostHeader);
-}
-
 export function renderWebManifest(hostHeader) {
-  const name = displayAppName(hostHeader);
+  const name = appNameFromHost(hostHeader);
   return JSON.stringify(
     {
       name,
-      short_name: name.length > 12 ? "VIXL" : name,
+      short_name: name,
       id: "/",
       start_url: "/",
       scope: "/",
@@ -390,6 +385,54 @@ export function stripShareMetaTags(html) {
   });
 }
 
+function metaContent(html, key) {
+  const pattern = new RegExp(
+    `<meta\\b[^>]*(?:property|name)\\s*=\\s*["']${key}["'][^>]*content\\s*=\\s*["']([^"']*)["'][^>]*>|<meta\\b[^>]*content\\s*=\\s*["']([^"']*)["'][^>]*(?:property|name)\\s*=\\s*["']${key}["'][^>]*>`,
+    "i",
+  );
+  const match = String(html).match(pattern);
+  return unescapeHtml((match && (match[1] || match[2])) || "").trim();
+}
+
+function isDefaultShareImage(url) {
+  return /\/og\.(jpg|png)(\?|$)/i.test(url) || /og\.grok\.me/i.test(url);
+}
+
+/** Work/pages may set their own og:* — keep those instead of the site card. */
+export function restorePageShareMeta(injected, original) {
+  let next = String(injected);
+  const title = metaContent(original, "og:title") || titleFromDocument(original);
+  const description = metaContent(original, "og:description");
+  const image = metaContent(original, "og:image");
+  if (title) {
+    next = next.replace(
+      /(<meta property="og:title" content=")[^"]*(")/,
+      `$1${escapeHtml(title)}$2`,
+    );
+  }
+  if (description && next.includes('property="og:description"')) {
+    next = next.replace(
+      /(<meta property="og:description" content=")[^"]*(")/,
+      `$1${escapeHtml(description)}$2`,
+    );
+  }
+  if (image && !isDefaultShareImage(image)) {
+    next = next.replace(
+      /(<meta property="og:image" content=")[^"]*(")/,
+      `$1${escapeHtml(image)}$2`,
+    );
+    next = next.replace(/<meta property="og:image:width" content="1200">/g, "");
+    next = next.replace(/<meta property="og:image:height" content="630">/g, "");
+    if (!/name="twitter:image"/i.test(next)) {
+      next = next.replace(
+        '<meta name="twitter:card" content="summary_large_image">',
+        `<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="${escapeHtml(image)}">`,
+      );
+    }
+  }
+  return next;
+}
+
 function insertAfterHeadOpen(html, snippet) {
   if (/<head\b[^>]*>/i.test(html)) {
     return html.replace(/<head\b[^>]*>/i, (open) => `${open}${snippet}`);
@@ -451,6 +494,7 @@ export function injectGrokPwaHead(html, ctx = {}) {
     next,
     grokOgHeadTags({ host, appName, site, documentTitle, cwd }).join(""),
   );
+  next = restorePageShareMeta(next, html);
 
   if (!next.includes("/grok-app-builder/extensions.js")) {
     missing.push(...grokExtensionsHeadTags(projectId));

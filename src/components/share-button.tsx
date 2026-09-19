@@ -4,14 +4,41 @@ import { workCanonical } from "@/lib/seo";
 import type { Work } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
+async function frameFile(work: Work): Promise<File | null> {
+  try {
+    const src = work.poster ?? work.src;
+    if (!src) return null;
+    const res = await fetch(src);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const type = blob.type || "image/jpeg";
+    const ext = type.includes("png") ? "png" : type.includes("webp") ? "webp" : "jpg";
+    return new File([blob], `${work.id}.${ext}`, { type });
+  } catch {
+    return null;
+  }
+}
+
 export function ShareButton({ work, className }: { work: Work; className?: string }) {
   async function share() {
     const url = workCanonical(work.id);
     const title = `${work.title} — VIXL`;
+    const file = await frameFile(work);
+    const canFiles =
+      file &&
+      typeof navigator.canShare === "function" &&
+      navigator.canShare({ files: [file] });
+
     try {
       if (typeof navigator.share === "function") {
-        // Title + URL only. Long captions (f/1.4, ellipses) glue onto the
-        // link on WhatsApp/iOS and the result does not open.
+        if (canFiles && file) {
+          try {
+            await navigator.share({ title, url, files: [file] });
+            return;
+          } catch (error) {
+            if (error instanceof DOMException && error.name === "AbortError") return;
+          }
+        }
         await navigator.share({ title, url });
         return;
       }
