@@ -11,6 +11,7 @@ export type Work = {
   width: number;
   height: number;
   year: number;
+  uploadDate?: string;
   location: string;
   camera: string;
   lens: string;
@@ -58,6 +59,7 @@ function asWork(value: unknown): Work | null {
     width: Number(item.width) || 1,
     height: Number(item.height) || 1,
     year: Number(item.year) || 0,
+    uploadDate: typeof item.uploadDate === "string" ? item.uploadDate : undefined,
     location: typeof item.location === "string" ? item.location : "",
     camera: typeof item.camera === "string" ? item.camera : "",
     lens: typeof item.lens === "string" ? item.lens : "",
