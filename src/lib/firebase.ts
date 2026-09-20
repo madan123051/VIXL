@@ -4,6 +4,7 @@ import type { User } from "firebase/auth";
 import type { Database } from "firebase/database";
 import type { FirebaseStorage } from "firebase/storage";
 import { ADMIN_EMAIL, isAdminEmail } from "@/lib/admin";
+import { getFirebaseDatabaseUrl } from "@/lib/firebase-config";
 import { CATALOG_SEED_PAYLOAD, catalogToPayload, type Catalog } from "@/lib/media";
 
 function readEnv(key: keyof ImportMetaEnv, fallback: string): string {
@@ -15,10 +16,7 @@ function readEnv(key: keyof ImportMetaEnv, fallback: string): string {
 export const firebaseOptions: FirebaseOptions = {
   apiKey: readEnv("VITE_FIREBASE_API_KEY", "AIzaSyA17I52wyRf42If0BicyfnkHy8kHnSEFCY"),
   authDomain: readEnv("VITE_FIREBASE_AUTH_DOMAIN", "vixl-1c88f.firebaseapp.com"),
-  databaseURL: readEnv(
-    "VITE_FIREBASE_DATABASE_URL",
-    "https://vixl-1c88f-default-rtdb.firebaseio.com",
-  ),
+  databaseURL: getFirebaseDatabaseUrl(),
   projectId: readEnv("VITE_FIREBASE_PROJECT_ID", "vixl-1c88f"),
   storageBucket: readEnv("VITE_FIREBASE_STORAGE_BUCKET", "vixl-1c88f.firebasestorage.app"),
   messagingSenderId: readEnv("VITE_FIREBASE_MESSAGING_SENDER_ID", "1019016832673"),
@@ -57,7 +55,7 @@ export function getFirebaseDatabase(): Promise<Database | null> {
     const app = getFirebaseApp();
     if (!app || !firebaseOptions.databaseURL) return null;
     const { getDatabase } = await import("firebase/database");
-    return getDatabase(app);
+    return getDatabase(app, firebaseOptions.databaseURL);
   })().catch(() => null);
   return databasePromise;
 }
