@@ -47,6 +47,7 @@ function blankWork(): Work {
     width: 1600,
     height: 1067,
     year: new Date().getFullYear(),
+    uploadDate: new Date().toISOString(),
     location: "",
     camera: "",
     lens: "",
@@ -178,6 +179,7 @@ export function AdminDesk({ email }: { email: string }) {
     try {
       const url = await uploadGalleryFile(file, `gallery/${selected.id}`);
       const patch: Partial<Work> = kind === "src" ? { src: url } : { poster: url };
+      if (kind === "src" && !selected.uploadDate) patch.uploadDate = new Date().toISOString();
       if (kind === "src" && file.type.startsWith("video/")) patch.kind = "video";
       patchWork(selected.id, patch);
       toast.success(kind === "src" ? "File attached" : "Poster attached");

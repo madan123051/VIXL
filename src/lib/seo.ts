@@ -1,4 +1,5 @@
 import { KIND_LABEL, type Work } from "@/lib/media";
+import { workUploadDate } from "@/lib/upload-date";
 
 export const SITE_URL = (import.meta.env.VITE_SITE_URL ?? "https://vixl.xyz").replace(
   /\/$/,
@@ -71,7 +72,7 @@ export function workJsonLd(work: Work) {
       identifier: work.id,
       thumbnailUrl: workImage(work),
       contentUrl: absoluteUrl(work.src),
-      uploadDate: `${work.year}-01-01`,
+      uploadDate: workUploadDate(work),
       keywords: work.tags.join(", "),
       creator,
       publisher: creator,
