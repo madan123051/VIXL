@@ -206,7 +206,8 @@ export function catalogToPayload(catalog: Catalog) {
   const order: string[] = [];
   for (const work of catalog.works) {
     const row: Work = { ...work };
-    if (!row.poster) delete row.poster;
+   if (!row.poster) delete row.poster;
+if (!row.uploadDate) delete row.uploadDate;
     works[work.id] = row;
     order.push(work.id);
   }
